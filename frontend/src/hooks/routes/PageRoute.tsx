@@ -17,7 +17,6 @@ import {
   FavouritePostsPage,
   ForgotPasswordPage,
   HomePage,
-  LandingPage,
   LoginPage,
   MyPostsPage,
   NearbyPostsPage,
@@ -183,8 +182,7 @@ const AppRoutes = () => {
   return (
     <MandatoryOnboardingGuard>
       <Routes>
-        <Route path='/' element={<LandingPage />}></Route>
-        <Route path='/landing' element={<LandingPage />}></Route>
+        <Route path='/' element={<Navigate to='/home' replace />} />
         <Route path='/login' element={<LoginPage />}></Route>
         <Route path='/onboarding' element={<OnboardingPage />}></Route>
         <Route path='/forgot-password' element={<ForgotPasswordPage />}></Route>
