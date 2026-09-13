@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion'
+
 import { dutPicture, background } from '@/assets/images'
 
 import { RegisterForm } from './components/RegisterForm'
@@ -15,7 +17,12 @@ const RegisterPage = () => (
     >
     </div>
 
-    <div className='bg-white rounded-2xl shadow-2xl flex w-full max-w-4xl overflow-hidden min-h-[550px]'> 
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className='bg-white rounded-2xl shadow-2xl flex w-full max-w-4xl overflow-hidden min-h-[550px]'
+    > 
       <div className='hidden md:block md:w-1/2'>
         <img 
           src={dutPicture} 
@@ -31,7 +38,7 @@ const RegisterPage = () => (
         </div>
         <RegisterForm />
       </div>
-    </div>
+    </motion.div>
   </div>
 )
 

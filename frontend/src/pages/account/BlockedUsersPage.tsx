@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import { FaArrowLeft, FaBan, FaUserCircle } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
@@ -59,15 +60,24 @@ const BlockedUsersPage = () => {
       <SiteHeader />
       <main className='px-4 py-10'>
         <section className='mx-auto max-w-5xl'>
-          <Link
-            to='/account/profile'
-            className='inline-flex items-center gap-2 rounded-full border border-[#003566] px-4 py-2 text-sm font-extrabold text-[#003566] transition hover:bg-[#003566] hover:text-white'
-          >
-            <FaArrowLeft />
-            Quay lại tài khoản
-          </Link>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className='inline-block'>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to='/account/profile'
+                className='inline-flex items-center gap-2 rounded-full border border-[#003566] px-4 py-2 text-sm font-extrabold text-[#003566] transition hover:bg-[#003566] hover:text-white'
+              >
+                <FaArrowLeft />
+                Quay lại tài khoản
+              </Link>
+            </motion.div>
+          </motion.div>
 
-          <div className='mt-6 rounded-2xl bg-white p-6 shadow-lg shadow-[#001D3D]/5'>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.3 }}
+            className='mt-6 rounded-2xl bg-white p-6 shadow-lg shadow-[#001D3D]/5'
+          >
             <div className='flex flex-wrap items-start justify-between gap-4'>
               <div>
                 <p className='text-sm font-extrabold uppercase tracking-wide text-[#D79A00]'>Cài đặt tài khoản</p>
@@ -94,54 +104,62 @@ const BlockedUsersPage = () => {
                   Đang tải danh sách chặn...
                 </div>
               ) : blockedUsers.length > 0 ? (
-                blockedUsers.map(({ blockedUser, createdAt }) => {
-                  const role = blockedUser.roles?.[0] || 'USER'
-
-                  return (
-                    <article
-                      key={blockedUser.id}
-                      className='flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4'
-                    >
-                      <div className='flex min-w-0 items-center gap-4'>
-                        <div className='grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-[#001D3D] text-lg text-[#FFC300]'>
-                          {blockedUser.avatarUrl ? (
-                            <img
-                              src={blockedUser.avatarUrl}
-                              alt={blockedUser.fullName}
-                              className='h-full w-full object-cover'
-                            />
-                          ) : (
-                            <FaUserCircle />
-                          )}
-                        </div>
-                        <div className='min-w-0'>
-                          <h2 className='truncate text-lg font-black text-gray-950'>{blockedUser.fullName}</h2>
-                          <p className='mt-1 text-sm font-semibold text-gray-500'>
-                            {roleLabels[role] || role} • {blockedUser.email}
-                          </p>
-                          <p className='mt-1 text-xs font-semibold text-gray-400'>
-                            Đã chặn từ {new Date(createdAt).toLocaleDateString('vi-VN')}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        type='button'
-                        disabled={processingId === blockedUser.id}
-                        onClick={() => void handleUnblock(blockedUser.id)}
-                        className='rounded-xl border border-[#003566] px-5 py-3 text-sm font-extrabold text-[#003566] transition hover:bg-[#003566] hover:text-white disabled:cursor-not-allowed disabled:opacity-60'
+                <AnimatePresence>
+                  {blockedUsers.map(({ blockedUser, createdAt }, index) => {
+                    const role = blockedUser.roles?.[0] || 'USER'
+  
+                    return (
+                      <motion.article
+                        key={blockedUser.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                        className='flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4'
                       >
-                        {processingId === blockedUser.id ? 'Đang bỏ chặn...' : 'Bỏ chặn'}
-                      </button>
-                    </article>
-                  )
-                })
+                        <div className='flex min-w-0 items-center gap-4'>
+                          <div className='grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-[#001D3D] text-lg text-[#FFC300]'>
+                            {blockedUser.avatarUrl ? (
+                              <img
+                                src={blockedUser.avatarUrl}
+                                alt={blockedUser.fullName}
+                                className='h-full w-full object-cover'
+                              />
+                            ) : (
+                              <FaUserCircle />
+                            )}
+                          </div>
+                          <div className='min-w-0'>
+                            <h2 className='truncate text-lg font-black text-gray-950'>{blockedUser.fullName}</h2>
+                            <p className='mt-1 text-sm font-semibold text-gray-500'>
+                              {roleLabels[role] || role} • {blockedUser.email}
+                            </p>
+                            <p className='mt-1 text-xs font-semibold text-gray-400'>
+                              Đã chặn từ {new Date(createdAt).toLocaleDateString('vi-VN')}
+                            </p>
+                          </div>
+                        </div>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          type='button'
+                          disabled={processingId === blockedUser.id}
+                          onClick={() => void handleUnblock(blockedUser.id)}
+                          className='rounded-xl border border-[#003566] px-5 py-3 text-sm font-extrabold text-[#003566] transition hover:bg-[#003566] hover:text-white disabled:cursor-not-allowed disabled:opacity-60'
+                        >
+                          {processingId === blockedUser.id ? 'Đang bỏ chặn...' : 'Bỏ chặn'}
+                        </motion.button>
+                      </motion.article>
+                    )
+                  })}
+                </AnimatePresence>
               ) : (
                 <div className='rounded-xl bg-gray-50 px-4 py-5 text-sm font-semibold text-gray-500'>
                   Bạn chưa chặn người dùng nào.
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </section>
       </main>
       <SiteFooter />

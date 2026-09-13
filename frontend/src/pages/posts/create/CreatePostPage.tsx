@@ -1,4 +1,5 @@
 import { type ChangeEvent, type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 
 import axios from 'axios'
 import L from 'leaflet'
@@ -61,10 +62,16 @@ type FormSectionProps = {
 }
 
 const FormSection = ({ children, title }: FormSectionProps) => (
-  <section className='rounded-2xl border border-[#F6D983] bg-white px-8 py-5 shadow-sm'>
+  <motion.section 
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true, margin: "-50px" }}
+    transition={{ duration: 0.5 }}
+    className='rounded-2xl border border-[#F6D983] bg-white px-8 py-5 shadow-sm'
+  >
     <h2 className='text-2xl font-extrabold text-[#111111]'>{title}</h2>
     <div className='mt-4'>{children}</div>
-  </section>
+  </motion.section>
 )
 
 type PillButtonProps = {
@@ -74,7 +81,9 @@ type PillButtonProps = {
 }
 
 const PillButton = ({ children, onClick, selected = false }: PillButtonProps) => (
-  <button
+  <motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
     type='button'
     onClick={onClick}
     aria-pressed={selected}
@@ -85,7 +94,7 @@ const PillButton = ({ children, onClick, selected = false }: PillButtonProps) =>
     }`}
   >
     {children}
-  </button>
+  </motion.button>
 )
 
 type SelectOption = {
@@ -825,19 +834,23 @@ const CreatePostPage = () => {
           </FormSection>
 
           <div className='mx-auto grid w-full max-w-[720px] gap-8 pt-4 md:grid-cols-2'>
-            <Link
-              to='/home'
-              className='rounded-2xl bg-white px-8 py-5 text-center text-2xl font-extrabold text-[#111111] shadow-md shadow-[#001D3D]/15 transition hover:-translate-y-0.5'
-            >
-              THOÁT
-            </Link>
-            <button
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className='w-full'>
+              <Link
+                to='/home'
+                className='block w-full rounded-2xl bg-white px-8 py-5 text-center text-2xl font-extrabold text-[#111111] shadow-md shadow-[#001D3D]/15 transition hover:shadow-lg hover:shadow-[#001D3D]/20'
+              >
+                THOÁT
+              </Link>
+            </motion.div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               type='submit'
               disabled={loading}
-              className='rounded-2xl bg-[#FFE9A6] px-8 py-5 text-2xl font-extrabold text-[#111111] shadow-md shadow-[#001D3D]/15 transition hover:-translate-y-0.5 hover:bg-[#F7DE8B]'
+              className='w-full rounded-2xl bg-[#FFE9A6] px-8 py-5 text-2xl font-extrabold text-[#111111] shadow-md shadow-[#001D3D]/15 transition hover:bg-[#F7DE8B] hover:shadow-lg hover:shadow-[#001D3D]/20 disabled:cursor-not-allowed disabled:opacity-70'
             >
               {loading ? 'ĐANG XỬ LÝ' : isEditMode ? 'CẬP NHẬT' : 'ĐĂNG BÀI'}
-            </button>
+            </motion.button>
           </div>
         </form>
         )}

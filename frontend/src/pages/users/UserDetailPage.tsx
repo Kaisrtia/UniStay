@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import { FaBan, FaMapMarkerAlt, FaSpinner, FaStar, FaUniversity, FaUserCircle } from 'react-icons/fa'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -308,8 +309,14 @@ const UserDetailPage = () => {
             </Link>
           </section>
         ) : profile ? (
-          <div className='grid gap-6'>
-            <section className='overflow-hidden rounded-2xl bg-white shadow-lg shadow-[#001D3D]/5'>
+          <AnimatePresence>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className='grid gap-6'
+            >
+              <section className='overflow-hidden rounded-2xl bg-white shadow-lg shadow-[#001D3D]/5'>
               <div className='h-36 bg-gradient-to-br from-[#001D3D] via-[#003566] to-[#0D63C2]' />
               <div className='px-6 pb-6'>
                 <div className='-mt-8 flex flex-wrap items-end justify-between gap-5'>
@@ -335,7 +342,9 @@ const UserDetailPage = () => {
                     </div>
                   </div>
                   {!isSelf ? (
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       type='button'
                       disabled={submitting}
                       onClick={handleBlockUser}
@@ -343,7 +352,7 @@ const UserDetailPage = () => {
                     >
                       <FaBan />
                       Chặn người dùng
-                    </button>
+                    </motion.button>
                   ) : null}
                 </div>
 
@@ -469,11 +478,21 @@ const UserDetailPage = () => {
                   ) : null}
 
                   {userPosts.length > 0 ? (
-                    <div className='grid gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                      {userPosts.map((post) => (
-                        <UserPostCard key={post.id} post={post} />
-                      ))}
-                    </div>
+                    <motion.div layout className='grid gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                      <AnimatePresence>
+                        {userPosts.map((post, index) => (
+                          <motion.div
+                            key={post.id}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ duration: 0.2, delay: index * 0.05 }}
+                          >
+                            <UserPostCard post={post} />
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </motion.div>
                   ) : !postsLoading ? (
                     <div className='rounded-2xl bg-gray-50 p-6 text-sm font-semibold text-gray-500'>
                       Người dùng này chưa có bài đăng công khai.
@@ -501,7 +520,8 @@ const UserDetailPage = () => {
                 </div>
               )}
             </section>
-          </div>
+          </motion.div>
+        </AnimatePresence>
         ) : null}
       </main>
 

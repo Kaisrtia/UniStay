@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { motion } from 'framer-motion'
+
 import { FaArrowLeft, FaBath, FaBed, FaBolt, FaMapMarkerAlt, FaRulerCombined } from 'react-icons/fa'
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -75,47 +77,53 @@ const isSortOrder = (value: string | null): value is NonNullable<PostFilters['so
   return value === 'asc' || value === 'desc'
 }
 
-const SearchResultCard = ({ post }: { post: Post }) => (
-  <Link to={`/posts/${post.id}`} className='group block'>
-    <article>
-      <div className='relative h-44 overflow-hidden rounded-md bg-gray-100'>
-        <img
-          src={getPostImage(post)}
-          alt={post.title}
-          className='h-full w-full object-cover transition duration-300 group-hover:scale-105'
-        />
-        {post.user?.hosts?.some((host) => host.isVerified) && (
-          <span className='absolute left-4 top-4 flex items-center gap-1 rounded bg-[#F2765B] px-3 py-1.5 text-xs font-extrabold text-white'>
-            <FaBolt className='text-[10px]' />
-            Đã xác thực
-          </span>
-        )}
-      </div>
-
-      <div className='mt-4'>
-        <p className='text-sm font-extrabold text-[#181A20]'>{formatCurrency(post.price)}</p>
-        <h3 className='mt-2 line-clamp-1 text-base font-extrabold text-[#181A20]'>{post.title}</h3>
-        <p className='mt-1 flex items-center gap-1 text-xs font-medium text-gray-500'>
-          <FaMapMarkerAlt className='text-[#FFC300]' />
-          {getPostAddress(post)}
-        </p>
-        <div className='mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-gray-600'>
-          <span className='flex items-center gap-1'>
-            <FaBed />
-            {roomTypeLabel[String(post.roomType)] || post.roomType || 'Phòng'}
-          </span>
-          <span className='flex items-center gap-1'>
-            <FaBath />
-            {post._count?.comments ?? 0} bình luận
-          </span>
-          <span className='flex items-center gap-1'>
-            <FaRulerCombined />
-            {post.area}m²
-          </span>
+const SearchResultCard = ({ post, index }: { post: Post; index: number }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, delay: index * 0.05 }}
+  >
+    <Link to={`/posts/${post.id}`} className='group block rounded-xl bg-white p-3 shadow-sm transition hover:shadow-xl hover:-translate-y-1 border border-transparent hover:border-[#003566]/10'>
+      <article>
+        <div className='relative h-44 overflow-hidden rounded-md bg-gray-100'>
+          <img
+            src={getPostImage(post)}
+            alt={post.title}
+            className='h-full w-full object-cover transition duration-300 group-hover:scale-105'
+          />
+          {post.user?.hosts?.some((host) => host.isVerified) && (
+            <span className='absolute left-4 top-4 flex items-center gap-1 rounded bg-[#F2765B] px-3 py-1.5 text-xs font-extrabold text-white'>
+              <FaBolt className='text-[10px]' />
+              Đã xác thực
+            </span>
+          )}
         </div>
-      </div>
-    </article>
-  </Link>
+
+        <div className='mt-4 px-1 pb-2'>
+          <p className='text-sm font-extrabold text-[#181A20]'>{formatCurrency(post.price)}</p>
+          <h3 className='mt-2 line-clamp-1 text-base font-extrabold text-[#181A20] transition group-hover:text-[#003566]'>{post.title}</h3>
+          <p className='mt-1 flex items-center gap-1 text-xs font-medium text-gray-500'>
+            <FaMapMarkerAlt className='text-[#FFC300]' />
+            {getPostAddress(post)}
+          </p>
+          <div className='mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-gray-600'>
+            <span className='flex items-center gap-1'>
+              <FaBed />
+              {roomTypeLabel[String(post.roomType)] || post.roomType || 'Phòng'}
+            </span>
+            <span className='flex items-center gap-1'>
+              <FaBath />
+              {post._count?.comments ?? 0} bình luận
+            </span>
+            <span className='flex items-center gap-1'>
+              <FaRulerCombined />
+              {post.area}m²
+            </span>
+          </div>
+        </div>
+      </article>
+    </Link>
+  </motion.div>
 )
 
 const SearchResultsPage = () => {
@@ -220,11 +228,16 @@ const SearchResultsPage = () => {
     }
 
     return (
-      <div className='grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4'>
-        {posts.map((post) => (
-          <SearchResultCard key={post.id} post={post} />
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        transition={{ duration: 0.3 }}
+        className='grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4'
+      >
+        {posts.map((post, index) => (
+          <SearchResultCard key={post.id} post={post} index={index} />
         ))}
-      </div>
+      </motion.div>
     )
   }, [errorMessage, loading, posts])
 
@@ -234,14 +247,16 @@ const SearchResultsPage = () => {
 
       <main className='px-8 py-10'>
         <div className='mx-auto mb-6 max-w-7xl'>
-          <Link
-            to='/home'
-            aria-label='Quay lại trang chủ'
-            title='Quay lại trang chủ'
-            className='inline-grid h-10 w-10 place-items-center rounded-full border border-[#003566] bg-white text-sm font-extrabold text-[#003566] shadow-sm transition hover:bg-[#003566] hover:text-white'
-          >
-            <FaArrowLeft />
-          </Link>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className='inline-block'>
+            <Link
+              to='/home'
+              aria-label='Quay lại trang chủ'
+              title='Quay lại trang chủ'
+              className='inline-grid h-10 w-10 place-items-center rounded-full border border-[#003566] bg-white text-sm font-extrabold text-[#003566] shadow-sm transition hover:bg-[#003566] hover:text-white'
+            >
+              <FaArrowLeft />
+            </Link>
+          </motion.div>
         </div>
         <section className='mx-auto max-w-7xl overflow-hidden rounded-2xl bg-white shadow-sm'>
           <div className='flex flex-wrap items-center justify-between gap-5 border-b border-gray-200 px-12 pt-8'>
@@ -259,7 +274,12 @@ const SearchResultsPage = () => {
                   }`}
                 >
                   {tab.label}
-                  {activeTab === tab.value && <span className='absolute bottom-0 left-0 h-1 w-full bg-[#FFC300]' />}
+                  {activeTab === tab.value && (
+                    <motion.span 
+                      layoutId="searchTabIndicator"
+                      className='absolute bottom-0 left-0 h-1 w-full bg-[#FFC300]' 
+                    />
+                  )}
                 </button>
               ))}
             </div>

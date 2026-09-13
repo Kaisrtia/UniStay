@@ -1,4 +1,5 @@
 import { useEffect, type FormEvent, useState } from 'react'
+import { motion } from 'framer-motion'
 
 import axios from 'axios'
 import { FaKey, FaLock, FaSave } from 'react-icons/fa'
@@ -93,14 +94,23 @@ const ChangePasswordPage = () => {
     <div className='min-h-screen bg-[#F5F7FA] text-[#181A20]'>
       <SiteHeader />
       <main className='mx-auto max-w-3xl px-8 py-10'>
-        <Link
-          to='/account/profile'
-          className='inline-flex rounded-full border border-[#003566] px-5 py-2 text-sm font-extrabold text-[#003566] transition hover:bg-[#003566] hover:text-white'
-        >
-          Quay lại hồ sơ
-        </Link>
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className='inline-block'>
+            <Link
+              to='/account/profile'
+              className='inline-flex rounded-full border border-[#003566] px-5 py-2 text-sm font-extrabold text-[#003566] transition hover:bg-[#003566] hover:text-white'
+            >
+              Quay lại hồ sơ
+            </Link>
+          </motion.div>
+        </motion.div>
 
-        <section className='mt-6 rounded-2xl bg-white p-8 shadow-lg shadow-[#001D3D]/5'>
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.3 }}
+          className='mt-6 rounded-2xl bg-white p-8 shadow-lg shadow-[#001D3D]/5'
+        >
           <div className='flex items-center gap-4'>
             <span className='grid h-14 w-14 place-items-center rounded-full bg-[#FFC300] text-[#001D3D]'>
               <FaKey />
@@ -154,16 +164,18 @@ const ChangePasswordPage = () => {
               </label>
             ))}
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type='submit'
               disabled={isSubmitDisabled}
               className='mt-2 inline-flex items-center justify-center gap-3 rounded-full bg-[#001D3D] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#003566] disabled:cursor-not-allowed disabled:bg-gray-300'
             >
               <FaSave />
               {loading ? 'Đang cập nhật...' : 'Lưu mật khẩu mới'}
-            </button>
+            </motion.button>
           </form>
-        </section>
+        </motion.section>
       </main>
       <SiteFooter />
     </div>

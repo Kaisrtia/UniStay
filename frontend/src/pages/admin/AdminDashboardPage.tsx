@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import { FaCheck, FaClipboardList, FaEye, FaShieldAlt, FaSyncAlt, FaTimes, FaUsers } from 'react-icons/fa'
 import { Link, useLocation } from 'react-router-dom'
@@ -201,21 +202,32 @@ const AdminShell = ({ activeTab, children }: AdminDashboardPageProps & { childre
           <h1 className='text-4xl font-black tracking-wide'>TRANG THỐNG KÊ</h1>
           <nav className='flex rounded-lg bg-gray-200 p-1 text-sm font-bold shadow-inner'>
             {adminTabs.map((tab) => (
-              <Link
-                key={tab.value}
-                to={tab.to}
-                className={`rounded-md px-7 py-2 transition ${
-                  activeTab === tab.value || location.pathname === tab.to
-                    ? 'bg-white text-[#181A20] shadow-md'
-                    : 'text-gray-700 hover:text-[#181A20]'
-                }`}
-              >
-                {tab.label}
-              </Link>
+              <motion.div key={tab.value} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  to={tab.to}
+                  className={`block rounded-md px-7 py-2 transition ${
+                    activeTab === tab.value || location.pathname === tab.to
+                      ? 'bg-white text-[#181A20] shadow-md'
+                      : 'text-gray-700 hover:text-[#181A20]'
+                  }`}
+                >
+                  {tab.label}
+                </Link>
+              </motion.div>
             ))}
           </nav>
         </div>
-        {children}
+        <AnimatePresence mode='wait'>
+          <motion.div 
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
       <SiteFooter />
     </div>
@@ -953,7 +965,12 @@ const HostVerificationCard = ({
   onVerify: (hostId: string) => void
   loading: boolean
 }) => (
-  <article className='rounded-2xl border border-gray-100 bg-white p-6 shadow-lg shadow-black/10'>
+  <motion.article 
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.2 }}
+    className='rounded-2xl border border-gray-100 bg-white p-6 shadow-lg shadow-black/10 transition hover:shadow-xl'
+  >
     <div className='flex items-start justify-between gap-5'>
       <div className='min-w-0'>
         <h3 className='truncate text-xl font-extrabold'>{candidate.user?.fullName || 'Chủ trọ'}</h3>
@@ -982,15 +999,17 @@ const HostVerificationCard = ({
       </div>
     </div>
 
-    <button
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       type='button'
       onClick={() => onVerify(candidate.hostId)}
       disabled={loading || candidate.isVerified}
       className='mt-5 w-full rounded-full bg-[#FFC300] px-5 py-3 text-sm font-extrabold text-[#001D3D] transition hover:bg-[#FFD60A] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500'
     >
       {candidate.isVerified ? 'Đã xác minh' : 'Xác minh chủ trọ'}
-    </button>
-  </article>
+    </motion.button>
+  </motion.article>
 )
 
 const AdminHostsContent = () => {

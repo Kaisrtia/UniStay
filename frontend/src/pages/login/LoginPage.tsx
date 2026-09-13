@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion'
+
 import { background, dutPicture } from '@/assets/images'
 
 import LoginForm from './components/LoginForm'
@@ -10,12 +12,19 @@ const LoginPage = () => (
       style={{
         backgroundImage: `url(${background})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center'
       }}
+
     />
 
     {/* Main Card */}
-    <div className='flex w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl md:min-h-[min(620px,calc(100dvh-4rem))]'>
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className='flex w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl md:min-h-[min(620px,calc(100dvh-4rem))]'
+    >
+
+
       {/* Left side: DUT Picture (Hidden on mobile) */}
       <div className='hidden md:block md:w-1/2'>
         <img src={dutPicture} alt='DUT Building' className='h-full w-full object-cover' />
@@ -29,7 +38,7 @@ const LoginPage = () => (
         </div>
         <LoginForm />
       </div>
-    </div>
+    </motion.div>
   </div>
 )
 

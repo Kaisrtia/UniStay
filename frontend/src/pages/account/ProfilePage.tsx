@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import {
   FaArrowLeft,
@@ -201,29 +202,33 @@ const ProfilePage = () => {
       <SiteHeader />
       <main className='mx-auto max-w-6xl px-8 py-10'>
         <div className='flex flex-wrap items-center justify-between gap-5'>
-          <div>
-            <Link
-              to='/home'
-              aria-label='Quay lại trang chủ'
-              title='Quay lại trang chủ'
-              className='inline-grid h-10 w-10 place-items-center rounded-full border border-[#003566] text-sm font-extrabold text-[#003566] transition hover:bg-[#003566] hover:text-white'
-            >
-              <FaArrowLeft />
-            </Link>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className='inline-block'>
+              <Link
+                to='/home'
+                aria-label='Quay lại trang chủ'
+                title='Quay lại trang chủ'
+                className='inline-grid h-10 w-10 place-items-center rounded-full border border-[#003566] text-sm font-extrabold text-[#003566] transition hover:bg-[#003566] hover:text-white'
+              >
+                <FaArrowLeft />
+              </Link>
+            </motion.div>
             <p className='mt-6 text-sm font-extrabold uppercase tracking-[0.24em] text-[#FFC300]'>UNISTAY</p>
             <h1 className='mt-3 text-4xl font-black'>Thông tin cá nhân</h1>
             <p className='mt-3 max-w-2xl text-gray-500'>
               Quản lý thông tin liên hệ và hồ sơ hiển thị khi bạn tương tác với bài đăng.
             </p>
-          </div>
-          <button
+          </motion.div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             type='button'
             onClick={() => setIsEditing((current) => !current)}
             className='inline-flex items-center gap-3 rounded-full bg-[#FFC300] px-6 py-3 text-sm font-extrabold text-[#001D3D] shadow-lg shadow-[#FFC300]/20 transition hover:bg-[#FFD60A]'
           >
             <FaEdit />
             {isEditing ? 'Đóng chỉnh sửa' : 'Chỉnh sửa'}
-          </button>
+          </motion.button>
         </div>
 
         {message ? (
@@ -236,55 +241,60 @@ const ProfilePage = () => {
             <FaSpinner className='animate-spin text-4xl text-[#001D3D]' aria-label='Đang tải' />
           </section>
         ) : profile ? (
-          <section className='mt-8 grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]'>
-            <aside className='rounded-2xl bg-white p-6 shadow-lg shadow-[#001D3D]/5'>
-              <div className='flex flex-col items-center text-center'>
-                <div className='grid h-28 w-28 place-items-center overflow-hidden rounded-full bg-[#001D3D] text-3xl font-black text-[#FFC300]'>
-                  {avatarPreview ? (
-                    <img src={avatarPreview} alt={profile.fullName} className='h-full w-full object-cover' />
-                  ) : (
-                    profile.fullName?.slice(0, 2).toUpperCase()
-                  )}
-                </div>
-                <h2 className='mt-4 text-2xl font-black'>{profile.fullName}</h2>
-                <span className='mt-3 inline-flex items-center gap-2 rounded-full bg-[#FFF7D6] px-4 py-2 text-xs font-extrabold text-[#6F5616]'>
-                  <FaIdCard />
-                  {roleText}
-                </span>
-                {isHost && hostInfo?.isVerified ? (
-                  <span className='mt-3 inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-xs font-extrabold text-green-700'>
-                    <FaCheckCircle />
-                    Chủ trọ đã xác minh
+          <AnimatePresence>
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className='mt-8 grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]'
+            >
+              <aside className='rounded-2xl bg-white p-6 shadow-lg shadow-[#001D3D]/5'>
+                <div className='flex flex-col items-center text-center'>
+                  <div className='grid h-28 w-28 place-items-center overflow-hidden rounded-full bg-[#001D3D] text-3xl font-black text-[#FFC300]'>
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt={profile.fullName} className='h-full w-full object-cover' />
+                    ) : (
+                      profile.fullName?.slice(0, 2).toUpperCase()
+                    )}
+                  </div>
+                  <h2 className='mt-4 text-2xl font-black'>{profile.fullName}</h2>
+                  <span className='mt-3 inline-flex items-center gap-2 rounded-full bg-[#FFF7D6] px-4 py-2 text-xs font-extrabold text-[#6F5616]'>
+                    <FaIdCard />
+                    {roleText}
                   </span>
-                ) : null}
-              </div>
-
-              <div className='mt-6 grid gap-3 text-sm'>
-                <div className='flex items-center gap-3 rounded-xl bg-[#F5F7FA] px-4 py-3'>
-                  <FaEnvelope className='text-[#003566]' />
-                  <span className='min-w-0 truncate font-bold'>{profile.email}</span>
+                  {isHost && hostInfo?.isVerified ? (
+                    <span className='mt-3 inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-xs font-extrabold text-green-700'>
+                      <FaCheckCircle />
+                      Chủ trọ đã xác minh
+                    </span>
+                  ) : null}
                 </div>
-                <div className='flex items-center gap-3 rounded-xl bg-[#F5F7FA] px-4 py-3'>
-                  <FaPhoneAlt className='text-[#003566]' />
-                  <span className='font-bold'>{profile.phone || 'Chưa cập nhật số điện thoại'}</span>
+  
+                <div className='mt-6 grid gap-3 text-sm'>
+                  <div className='flex items-center gap-3 rounded-xl bg-[#F5F7FA] px-4 py-3'>
+                    <FaEnvelope className='text-[#003566]' />
+                    <span className='min-w-0 truncate font-bold'>{profile.email}</span>
+                  </div>
+                  <div className='flex items-center gap-3 rounded-xl bg-[#F5F7FA] px-4 py-3'>
+                    <FaPhoneAlt className='text-[#003566]' />
+                    <span className='font-bold'>{profile.phone || 'Chưa cập nhật số điện thoại'}</span>
+                  </div>
+                  {isStudentForm ? (
+                    <div className='flex items-center gap-3 rounded-xl bg-[#F5F7FA] px-4 py-3'>
+                      <FaUniversity className='text-[#003566]' />
+                      <span className='font-bold'>{profile.student?.university?.name || 'Chưa chọn trường học'}</span>
+                    </div>
+                  ) : null}
+                  {isHost ? (
+                    <div className='flex items-center gap-3 rounded-xl bg-[#F5F7FA] px-4 py-3'>
+                      <FaIdCard className='text-[#003566]' />
+                      <span className='font-bold'>Tổng bài đăng: {hostInfo?.totalPost || 0}</span>
+                    </div>
+                  ) : null}
                 </div>
-                {isStudentForm ? (
-                  <div className='flex items-center gap-3 rounded-xl bg-[#F5F7FA] px-4 py-3'>
-                    <FaUniversity className='text-[#003566]' />
-                    <span className='font-bold'>{profile.student?.university?.name || 'Chưa chọn trường học'}</span>
-                  </div>
-                ) : null}
-                {isHost ? (
-                  <div className='flex items-center gap-3 rounded-xl bg-[#F5F7FA] px-4 py-3'>
-                    <FaIdCard className='text-[#003566]' />
-                    <span className='font-bold'>Tổng bài đăng: {hostInfo?.totalPost || 0}</span>
-                  </div>
-                ) : null}
-              </div>
-            </aside>
-
-            <form onSubmit={handleSubmit} className='min-w-0 rounded-2xl bg-white p-6 shadow-lg shadow-[#001D3D]/5'>
-              <div className='grid min-w-0 gap-5 md:grid-cols-2'>
+              </aside>
+  
+              <form onSubmit={handleSubmit} className='min-w-0 rounded-2xl bg-white p-6 shadow-lg shadow-[#001D3D]/5'>
+                <div className='grid min-w-0 gap-5 md:grid-cols-2'>
                 <label className='grid min-w-0 gap-2 text-sm font-extrabold'>
                   Họ và tên
                   <input
@@ -397,17 +407,20 @@ const ProfilePage = () => {
                   <FaUser className='text-[#FFC300]' />
                   Thông tin này được dùng khi liên hệ thuê phòng hoặc quản lý bài đăng.
                 </span>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   type='submit'
                   disabled={!isEditing || saving}
                   className='inline-flex items-center gap-3 rounded-full bg-[#001D3D] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#003566] disabled:cursor-not-allowed disabled:bg-gray-300'
                 >
                   <FaSave />
                   {saving ? 'Đang lưu...' : 'Lưu thông tin'}
-                </button>
+                </motion.button>
               </div>
             </form>
-          </section>
+          </motion.section>
+        </AnimatePresence>
         ) : null}
       </main>
       <SiteFooter />

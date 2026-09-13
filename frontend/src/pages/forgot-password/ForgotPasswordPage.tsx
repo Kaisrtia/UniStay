@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react'
 
 import axios from 'axios'
+import { motion } from 'framer-motion'
 import { FaEnvelope, FaPaperPlane } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 
@@ -52,7 +53,12 @@ const ForgotPasswordPage = () => {
     <div className='min-h-screen bg-[#F5F7FA] text-[#181A20]'>
       <SiteHeader />
       <main className='mx-auto max-w-xl px-8 py-12'>
-        <section className='rounded-2xl bg-white p-8 shadow-lg shadow-[#001D3D]/5'>
+        <motion.section 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className='rounded-2xl bg-white p-8 shadow-2xl shadow-[#001D3D]/10'
+        >
           <h1 className='text-3xl font-black'>Quên mật khẩu</h1>
           <p className='mt-3 text-sm leading-6 text-gray-500'>
             Nhập email đã đăng ký để nhận liên kết đặt lại mật khẩu.
@@ -74,20 +80,22 @@ const ForgotPasswordPage = () => {
                 />
               </span>
             </label>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type='submit'
               disabled={loading}
-              className='inline-flex items-center justify-center gap-3 rounded-full bg-[#FFC300] px-6 py-3 text-sm font-extrabold text-[#001D3D] transition hover:bg-[#FFD60A] disabled:cursor-not-allowed disabled:bg-gray-300'
+              className='inline-flex items-center justify-center gap-3 rounded-full bg-[#FFC300] px-6 py-3 text-sm font-extrabold text-[#001D3D] shadow-md transition hover:bg-[#FFD60A] disabled:cursor-not-allowed disabled:bg-gray-300'
             >
               <FaPaperPlane />
               {loading ? 'Đang gửi...' : 'Gửi liên kết'}
-            </button>
+            </motion.button>
           </form>
 
           <Link to='/login' className='mt-6 inline-flex text-sm font-extrabold text-[#003566] hover:underline'>
             Quay lại đăng nhập
           </Link>
-        </section>
+        </motion.section>
       </main>
       <SiteFooter />
     </div>

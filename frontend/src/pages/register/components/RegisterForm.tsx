@@ -1,5 +1,6 @@
 import { type FormEvent } from 'react'
 
+import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 
 import GoogleCredentialButton from '@/components/auth/GoogleCredentialButton'
@@ -126,13 +127,15 @@ export const RegisterForm = () => {
         />
       </div>
 
-      <button
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         type='submit'
         disabled={loading}
-        className='mt-2 rounded-lg bg-yellow-400 px-3 py-2 text-sm font-bold text-white shadow-md transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-70'
+        className='mt-2 rounded-lg bg-[#FFC300] px-3 py-2 text-sm font-extrabold text-[#001D3D] shadow-md transition hover:bg-[#ffcf33] disabled:cursor-not-allowed disabled:opacity-70'
       >
         {loading ? 'Đang đăng ký...' : 'Đăng ký'}
-      </button>
+      </motion.button>
 
       <GoogleCredentialButton
         disabled={loading}

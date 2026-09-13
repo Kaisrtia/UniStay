@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 
 import axios from 'axios'
+import { motion } from 'framer-motion'
 import { FaArrowLeft, FaCheck, FaHome, FaPhoneAlt, FaSpinner, FaUniversity, FaUserGraduate } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
@@ -281,7 +282,12 @@ const OnboardingPage = () => {
       </header>
 
       <main className='mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:grid-cols-[320px_minmax(0,1fr)]'>
-        <aside className='rounded-2xl bg-white p-6 shadow-lg shadow-[#001D3D]/5'>
+        <motion.aside 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className='rounded-2xl bg-white p-6 shadow-xl shadow-[#001D3D]/5'
+        >
           <div className='grid gap-4'>
             {[
               ['1', 'Chọn vai trò', step === 1],
@@ -303,9 +309,14 @@ const OnboardingPage = () => {
           <p className='mt-6 text-sm font-semibold leading-6 text-gray-500'>
             Bạn cần hoàn tất các thông tin này để UniStay cấp đúng quyền sử dụng và hiển thị liên hệ an toàn.
           </p>
-        </aside>
+        </motion.aside>
 
-        <section className='rounded-2xl bg-white p-6 shadow-lg shadow-[#001D3D]/5'>
+        <motion.section 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className='rounded-2xl bg-white p-6 shadow-xl shadow-[#001D3D]/5'
+        >
           {message ? (
             <p className='mb-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600'>{message}</p>
           ) : null}
@@ -366,13 +377,15 @@ const OnboardingPage = () => {
               {fieldErrors.role ? <p className='mt-4 text-sm font-bold text-red-600'>{fieldErrors.role}</p> : null}
 
               <div className='mt-7 flex justify-end'>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   type='button'
                   onClick={goToProfileStep}
-                  className='rounded-full bg-[#001D3D] px-7 py-3 text-sm font-extrabold text-white transition hover:bg-[#003566]'
+                  className='rounded-full bg-[#001D3D] px-7 py-3 text-sm font-extrabold text-white shadow-md transition hover:bg-[#003566]'
                 >
                   Tiếp tục
-                </button>
+                </motion.button>
               </div>
             </div>
           ) : (
@@ -385,7 +398,9 @@ const OnboardingPage = () => {
                     Vai trò đã chọn: <span className='text-[#001D3D]'>{selectedRole?.title}</span>
                   </p>
                 </div>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   type='button'
                   onClick={() => {
                     setFieldErrors({})
@@ -395,7 +410,7 @@ const OnboardingPage = () => {
                   className='inline-flex items-center gap-2 rounded-full bg-gray-100 px-5 py-2 text-sm font-extrabold text-gray-700 transition hover:bg-gray-200'
                 >
                   <FaArrowLeft />
-                </button>
+                </motion.button>
               </div>
 
               <div className='mt-7 grid gap-5 md:grid-cols-2'>
@@ -481,17 +496,19 @@ const OnboardingPage = () => {
               </div>
 
               <div className='mt-8 flex justify-end'>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   type='submit'
                   disabled={saving}
-                  className='rounded-full bg-[#001D3D] px-7 py-3 text-sm font-extrabold text-white transition hover:bg-[#003566] disabled:cursor-not-allowed disabled:bg-gray-300'
+                  className='rounded-full bg-[#001D3D] px-7 py-3 text-sm font-extrabold text-white shadow-md transition hover:bg-[#003566] disabled:cursor-not-allowed disabled:bg-gray-300'
                 >
                   {saving ? 'Đang hoàn tất...' : 'Hoàn tất thiết lập'}
-                </button>
+                </motion.button>
               </div>
             </form>
           )}
-        </section>
+        </motion.section>
       </main>
     </div>
   )

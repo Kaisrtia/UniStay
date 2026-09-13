@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
 
 import L from 'leaflet'
 import {
@@ -164,8 +165,13 @@ const MapClickHandler = ({ onPick }: { onPick: (lat: number, lng: number) => voi
   return null
 }
 
-const NearbyPostPreview = ({ post }: { post: NearbyPost }) => (
-  <article className='overflow-hidden rounded-lg border border-[#E6EAF0] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg'>
+const NearbyPostPreview = ({ post, index = 0 }: { post: NearbyPost, index?: number }) => (
+  <motion.article 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, delay: index * 0.05 }}
+    className='overflow-hidden rounded-lg border border-[#E6EAF0] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg'
+  >
     <img src={getPostImage(post)} alt={post.title} className='h-40 w-full object-cover' />
     <div className='p-4'>
       <div className='flex items-center justify-between gap-3'>
@@ -194,7 +200,7 @@ const NearbyPostPreview = ({ post }: { post: NearbyPost }) => (
         Xem chi tiết
       </Link>
     </div>
-  </article>
+  </motion.article>
 )
 
 const NearbyPostsPage = () => {
@@ -350,13 +356,13 @@ const NearbyPostsPage = () => {
             </Link>
 
             <div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
-              <div>
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                 <p className='text-sm font-extrabold tracking-[0.24em] text-[#0D63C2]'>BẢN ĐỒ PHÒNG TRỌ</p>
                 <h1 className='mt-3 text-4xl font-extrabold text-[#001D3D]'>Tìm phòng gần nhất</h1>
                 <p className='mt-3 max-w-3xl text-base font-medium leading-7 text-gray-600'>
                   Chọn một điểm trên bản đồ hoặc chọn trường đại học để xem các phòng trọ và bài ở ghép trong bán kính phù hợp.
                 </p>
-              </div>
+              </motion.div>
 
               <div className='grid gap-3 sm:grid-cols-[minmax(220px,360px)_auto]'>
                 <label className='block'>
@@ -519,11 +525,16 @@ const NearbyPostsPage = () => {
             {loading ? (
               <p className='py-12 text-center text-sm font-semibold text-gray-500'>Đang tìm phòng gần vị trí đã chọn...</p>
             ) : posts.length > 0 ? (
-              <div className='mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4'>
-                {posts.map((post) => (
-                  <NearbyPostPreview key={post.id} post={post} />
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                transition={{ duration: 0.3 }}
+                className='mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4'
+              >
+                {posts.map((post, index) => (
+                  <NearbyPostPreview key={post.id} post={post} index={index} />
                 ))}
-              </div>
+              </motion.div>
             ) : selectedPoint ? (
               <p className='py-12 text-center text-sm font-semibold text-gray-500'>
                 Chưa có bài đăng nào trong bán kính này. Hãy tăng bán kính hoặc chọn vị trí khác.

@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import { FaArrowLeft, FaBolt, FaCheckCircle } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
@@ -242,24 +243,32 @@ const DemandPage = () => {
     <div className='min-h-screen bg-[#F5F7FA] text-[#181A20]'>
       <SiteHeader />
       <main className='mx-auto max-w-7xl px-8 py-10'>
-        <div>
-          <Link
-            to='/home'
-            aria-label='Quay lại trang chủ'
-            title='Quay lại trang chủ'
-            className='inline-grid h-10 w-10 place-items-center rounded-full border border-[#003566] text-sm font-extrabold text-[#003566] transition hover:bg-[#003566] hover:text-white'
-          >
-            <FaArrowLeft />
-          </Link>
-          <p className='text-sm font-extrabold uppercase tracking-[0.24em] text-[#FFC300]'>UNISTAY</p>
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className='inline-block'>
+            <Link
+              to='/home'
+              aria-label='Quay lại trang chủ'
+              title='Quay lại trang chủ'
+              className='inline-grid h-10 w-10 place-items-center rounded-full border border-[#003566] text-sm font-extrabold text-[#003566] transition hover:bg-[#003566] hover:text-white'
+            >
+              <FaArrowLeft />
+            </Link>
+          </motion.div>
+          <p className='mt-6 text-sm font-extrabold uppercase tracking-[0.24em] text-[#FFC300]'>UNISTAY</p>
           <h1 className='mt-3 text-4xl font-black'>Nhu cầu thuê phòng</h1>
           <p className='mt-3 max-w-2xl text-gray-500'>
             Lưu ngân sách, trường muốn ở gần, bán kính tìm kiếm, diện tích và tiện ích để hệ thống ưu tiên bài đăng phù hợp nhất.
           </p>
-        </div>
+        </motion.div>
 
         <section className='mt-8 grid gap-8 lg:grid-cols-[520px_minmax(0,1fr)]'>
-          <form onSubmit={handleSubmit} className='rounded-2xl bg-white p-7 shadow-lg shadow-[#001D3D]/5'>
+          <motion.form 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            onSubmit={handleSubmit} 
+            className='rounded-2xl bg-white p-7 shadow-lg shadow-[#001D3D]/5'
+          >
             <div className='grid gap-5'>
               <section className='grid gap-3'>
                 <FieldHeader label='Vị trí' priority={locationPriority} onPriorityChange={setLocationPriority} />
@@ -437,9 +446,14 @@ const DemandPage = () => {
                 </div>
               </section>
 
-              <button type='submit' className='rounded-xl bg-[#001D3D] px-5 py-4 text-sm font-extrabold text-white'>
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type='submit' 
+                className='rounded-xl bg-[#001D3D] px-5 py-4 text-sm font-extrabold text-white transition hover:bg-[#003566]'
+              >
                 Lưu nhu cầu và xem gợi ý
-              </button>
+              </motion.button>
             </div>
             {message ? (
               <p className='mt-4 flex items-center gap-2 text-sm font-bold text-green-600'>
@@ -448,33 +462,47 @@ const DemandPage = () => {
               </p>
             ) : null}
             {errorMessage ? <p className='mt-4 text-sm font-bold text-red-600'>{errorMessage}</p> : null}
-          </form>
+          </motion.form>
 
-          <section className='rounded-2xl bg-white p-7 shadow-lg shadow-[#001D3D]/5'>
+          <motion.section 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className='rounded-2xl bg-white p-7 shadow-lg shadow-[#001D3D]/5'
+          >
             <div className='flex items-center justify-between gap-5'>
               <h2 className='text-2xl font-black'>Gợi ý phù hợp</h2>
               <FaBolt className='text-2xl text-[#FFC300]' />
             </div>
             <div className='mt-6 grid gap-4 sm:grid-cols-2'>
-              {recommendedPosts.map((post) => (
-                <Link
-                  key={post.id}
-                  to={`/posts/${post.id}`}
-                  className='block rounded-xl border border-gray-100 p-4 transition hover:-translate-y-0.5 hover:border-[#FFC300] hover:shadow-lg hover:shadow-[#001D3D]/10'
-                >
-                  <p className='text-xs font-extrabold uppercase text-[#FFC300]'>{post.roomType}</p>
-                  <h3 className='mt-2 line-clamp-2 text-lg font-extrabold'>{post.title}</h3>
-                  <p className='mt-2 text-sm text-gray-500'>{post.ward?.name || post.detailAddress}</p>
-                  <p className='mt-3 font-black text-[#003566]'>{currencyFormatter.format(Number(post.price || 0))}</p>
-                </Link>
-              ))}
+              <AnimatePresence>
+                {recommendedPosts.map((post, index) => (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.2, delay: index * 0.05 }}
+                  >
+                    <Link
+                      to={`/posts/${post.id}`}
+                      className='block h-full rounded-xl border border-gray-100 p-4 transition hover:-translate-y-0.5 hover:border-[#FFC300] hover:shadow-lg hover:shadow-[#001D3D]/10'
+                    >
+                      <p className='text-xs font-extrabold uppercase text-[#FFC300]'>{post.roomType}</p>
+                      <h3 className='mt-2 line-clamp-2 text-lg font-extrabold'>{post.title}</h3>
+                      <p className='mt-2 text-sm text-gray-500'>{post.ward?.name || post.detailAddress}</p>
+                      <p className='mt-3 font-black text-[#003566]'>{currencyFormatter.format(Number(post.price || 0))}</p>
+                    </Link>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
               {recommendedPosts.length === 0 ? (
                 <p className='rounded-xl bg-gray-50 p-5 text-sm font-bold text-gray-500 sm:col-span-2'>
                   Chưa có gợi ý. Hãy lưu nhu cầu thuê trước.
                 </p>
               ) : null}
             </div>
-          </section>
+          </motion.section>
         </section>
       </main>
       <SiteFooter />

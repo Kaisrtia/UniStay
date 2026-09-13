@@ -1,6 +1,7 @@
-﻿import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import axios from 'axios'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   FaArrowLeft,
   FaCheckCircle,
@@ -752,9 +753,13 @@ const PostDetailPage = () => {
       <div className='min-h-screen bg-gray-50 text-[#181A20]'>
         <SiteHeader />
         <main className='px-4 py-10'>
-          <div className='mx-auto max-w-5xl rounded-lg bg-white p-8 shadow-sm'>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className='mx-auto max-w-5xl rounded-lg bg-white p-8 shadow-sm'
+          >
             <p className='text-sm text-gray-500'>Đang tải chi tiết bài đăng...</p>
-          </div>
+          </motion.div>
         </main>
         <SiteFooter />
       </div>
@@ -766,7 +771,11 @@ const PostDetailPage = () => {
       <div className='min-h-screen bg-gray-50 text-[#181A20]'>
         <SiteHeader />
         <main className='px-4 py-10'>
-          <div className='mx-auto max-w-5xl rounded-lg bg-white p-8 shadow-sm'>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className='mx-auto max-w-5xl rounded-2xl bg-white p-8 shadow-xl shadow-[#001D3D]/5'
+          >
             <Link
               to={backTo}
               aria-label={backLabel}
@@ -780,7 +789,7 @@ const PostDetailPage = () => {
             <p className='mt-4 text-sm text-gray-500'>
               Vui lòng đăng nhập lại hoặc chọn một bài đăng khác trong danh sách.
             </p>
-          </div>
+          </motion.div>
         </main>
         <SiteFooter />
       </div>
@@ -792,7 +801,12 @@ const PostDetailPage = () => {
       <SiteHeader />
       <main className='px-4 py-10'>
         <article className='mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_420px]'>
-          <section className='rounded-lg bg-white p-6 shadow-sm'>
+          <motion.section 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className='rounded-2xl bg-white p-6 shadow-xl shadow-[#001D3D]/5'
+          >
             <Link
               to={backTo}
               aria-label={backLabel}
@@ -1020,7 +1034,7 @@ const PostDetailPage = () => {
                 )}
               </div>
             </section>
-          </section>
+            </motion.section>
 
           <aside className='space-y-4'>
             <section className='rounded-xl bg-[#FFF0C7] p-5 shadow-sm shadow-[#001D3D]/10'>
@@ -1116,13 +1130,15 @@ const PostDetailPage = () => {
                     placeholder='Nhập bình luận của bạn'
                     className='min-h-28 resize-none rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200'
                   />
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     type='submit'
                     disabled={isSubmittingComment || !comment.trim()}
-                    className='rounded-lg bg-yellow-400 px-4 py-3 text-sm font-bold text-gray-950 transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-70'
+                    className='rounded-lg bg-[#FFC300] px-4 py-3 text-sm font-extrabold text-[#001D3D] shadow-md transition hover:bg-[#FFD60A] disabled:cursor-not-allowed disabled:opacity-70'
                   >
                     {isSubmittingComment ? 'Đang gửi...' : 'Gửi bình luận'}
-                  </button>
+                  </motion.button>
                   {commentMessage ? (
                     <p className='rounded-xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-600'>
                       {commentMessage}
@@ -1162,8 +1178,19 @@ const PostDetailPage = () => {
         </article>
       </main>
       {isReportModalOpen ? (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-[#000814]/60 px-4 backdrop-blur-sm'>
-          <div className='w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl shadow-[#000814]/30'>
+        <AnimatePresence>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className='fixed inset-0 z-50 flex items-center justify-center bg-[#000814]/60 px-4 backdrop-blur-sm'
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className='w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl shadow-[#000814]/30'
+            >
             <div className='flex items-start justify-between gap-4'>
               <div>
                 <h2 className='text-2xl font-black text-gray-950'>Báo cáo bài đăng</h2>
@@ -1226,8 +1253,9 @@ const PostDetailPage = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
       ) : null}
       <SiteFooter />
     </div>
