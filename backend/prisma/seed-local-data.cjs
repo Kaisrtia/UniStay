@@ -586,10 +586,9 @@ const pickRandomAmenityIds = (amenityByName, count, rng = random) => {
   return shuffled.slice(0, Math.min(count, shuffled.length));
 };
 
-const runInBatches = async (items, batchSize, handler) => {
-  for (let index = 0; index < items.length; index += batchSize) {
-    const batch = items.slice(index, index + batchSize);
-    await Promise.all(batch.map((item, offset) => handler(item, index + offset)));
+const runSequentially = async (items, ignoredBatchSize, handler) => {
+  for (let index = 0; index < items.length; index += 1) {
+    await handler(items[index], index);
   }
 };
 
@@ -1079,7 +1078,7 @@ const main = async () => {
     universityId: input.universityId
   }));
 
-  await runInBatches(generatedUserInputs.hosts, 40, async (input, index) => {
+  await runSequentially(generatedUserInputs.hosts, 40, async (input, index) => {
     await upsertUser(input);
     await prisma.host.upsert({
       where: { hostId: input.id },
@@ -1095,7 +1094,7 @@ const main = async () => {
     });
   });
 
-  await runInBatches(generatedUserInputs.students, 40, async (input) => {
+  await runSequentially(generatedUserInputs.students, 40, async (input) => {
     await upsertUser(input);
     await prisma.student.upsert({
       where: { studentId: input.id },
@@ -1151,7 +1150,7 @@ const main = async () => {
     }))
   });
 
-  await runInBatches(generatedStudents, 40, async (generatedStudent, index) => {
+  await runSequentially(generatedStudents, 40, async (generatedStudent, index) => {
     const location = safeListingLocations[index % safeListingLocations.length];
     const ward = wardByName.get(location.wardName) ?? wardByName.get('Phường Bình Thuận');
     const minPrice = roundTo(randomInt(1200000, 3500000), 50000);
@@ -1286,7 +1285,7 @@ const main = async () => {
     return counts;
   }, new Map());
 
-  await runInBatches([...hostPostCounts.entries()], 40, async ([hostIdForCount, totalPost]) => {
+  await runSequentially([...hostPostCounts.entries()], 40, async ([hostIdForCount, totalPost]) => {
     await prisma.host.updateMany({
       where: { hostId: hostIdForCount },
       data: { totalPost }
@@ -1328,7 +1327,7 @@ const main = async () => {
   }
 
   const generatedFavoritePairs = buildUniquePostPairs(posts, generatedStudents, LOAD_FAVORITE_COUNT);
-  await runInBatches(generatedFavoritePairs, 80, async ({ post, student }) => {
+  await runSequentially(generatedFavoritePairs, 80, async ({ post, student }) => {
     await prisma.student_favorite_post.upsert({
       where: {
         studentId_postId: {
@@ -1345,7 +1344,7 @@ const main = async () => {
   });
 
   const generatedRequestPairs = buildUniquePostPairs(posts.slice().reverse(), generatedStudents, LOAD_REQUEST_COUNT);
-  await runInBatches(generatedRequestPairs, 80, async ({ post, student }, index) => {
+  await runSequentially(generatedRequestPairs, 80, async ({ post, student }, index) => {
     await prisma.accomodation_request.upsert({
       where: {
         postId_userId: {
@@ -1410,7 +1409,7 @@ const main = async () => {
   }
 
   const loadComments = buildLoadComments(posts, generatedStudents);
-  await runInBatches(loadComments, 1, async (comment) => {
+  await runSequentially(loadComments, 1, async (comment) => {
     await prisma.comment.upsert({
       where: { id: comment.id },
       update: {
@@ -1481,7 +1480,7 @@ const main = async () => {
   }
 
   const loadReports = buildLoadReports(posts, loadComments, generatedStudents, admin.id);
-  await runInBatches(loadReports, 80, async (report) => {
+  await runSequentially(loadReports, 80, async (report) => {
     await prisma.report.upsert({
       where: { id: report.id },
       update: {
