@@ -1,0 +1,105 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    container_name: unistay-backend
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${SERVER_PORT:-6969}:${SERVER_PORT:-6969}'
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}@db:5432/${DATABASE_NAME:-unistay-db}?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: unistay-frontend
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${FRONTEND_PORT:-8080}:80'
+
+  db:
+    image: postgres:16-alpine
+    container_name: unistay-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}
+      POSTGRES_DB: ${DATABASE_NAME:-unistay-db}
+    ports:
+      - '${POSTGRES_PORT:-3005}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d $${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: unistay-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?PGADMIN_EMAIL is required}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?PGADMIN_PASSWORD is required}
+    ports:
+      - '127.0.0.1:${PGADMIN_PORT:-5050}:80'
+    depends_on:
+      - db
+
+  migrate-seed-data:
+    build:
+      context: ./backend
+      target: build
+    profiles:
+      - tools
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}@db:5432/${DATABASE_NAME:-unistay-db}?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ['npx', 'prisma', 'migrate', 'deploy']
+
+  redis:
+    image: redis:7-alpine
+    container_name: unistay-redis
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+    ports:
+      - '${REDIS_EXTERNAL_PORT:-3004}:6379'
+    command:
+      - sh
+      - -c
+      - >
+        redis-server
+        --appendonly yes
+        --appendfsync everysec
+        --maxmemory ${REDIS_MAXMEMORY:-256mb}
+        --maxmemory-policy noeviction
+        --requirepass "$${REDIS_PASSWORD}"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -a "$${REDIS_PASSWORD}" ping | grep PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:

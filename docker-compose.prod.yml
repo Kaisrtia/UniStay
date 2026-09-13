@@ -1,24 +1,44 @@
 services:
-  app:
+  caddy:
+    image: caddy:2-alpine
+    container_name: unistay-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"     # Bắt buộc để Let's Encrypt xác thực HTTP
+      - "443:443"   # Bắt buộc cho HTTPS
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data      # Lưu trữ chứng chỉ SSL vĩnh viễn (để không bị rate limit khi restart)
+      - caddy_config:/config
+    depends_on:
+      - frontend
+
+  backend:
     build:
-      context: .
+      context: ./backend
       target: runtime
     container_name: unistay-backend
     restart: unless-stopped
-    ports:
-      - '127.0.0.1:${SERVER_PORT:-6969}:${SERVER_PORT:-6969}'
     env_file:
-      - .env
+      - ./backend/.env
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
+      NODE_ENV: production
       REDIS_HOST: redis
-      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PORT: 6379
       DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}@db:5432/${DATABASE_NAME:-unistay-db}?schema=public
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: unistay-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
 
   db:
     image: postgres:16-alpine
@@ -28,8 +48,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}
       POSTGRES_DB: ${DATABASE_NAME:-unistay-db}
-    ports:
-      - '${POSTGRES_PORT:-3005}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -38,28 +56,16 @@ services:
       timeout: 5s
       retries: 5
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: unistay-pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?PGADMIN_EMAIL is required}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?PGADMIN_PASSWORD is required}
-    ports:
-      - '127.0.0.1:${PGADMIN_PORT:-5050}:80'
-    depends_on:
-      - db
-
   migrate-seed-data:
     build:
-      context: .
+      context: ./backend
       target: build
     profiles:
       - tools
     env_file:
-      - .env
+      - ./backend/.env
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
+      NODE_ENV: production
       DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}@db:5432/${DATABASE_NAME:-unistay-db}?schema=public
     depends_on:
       db:
@@ -72,8 +78,6 @@ services:
     restart: unless-stopped
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
-    ports:
-      - '${REDIS_EXTERNAL_PORT:-3004}:6379'
     command:
       - sh
       - -c
@@ -95,3 +99,5 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  caddy_data:
+  caddy_config:

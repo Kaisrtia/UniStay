@@ -1,4 +1,4 @@
-﻿<p align="center">
+<p align="center">
   <img src="logo.png" alt="UniStay Logo" width="120" />
 </p>
 
@@ -125,29 +125,35 @@
 ## Project Structure
 
 ```text
-PBL3-UniStay-Da-Nang/
- backend/                         # Express.js API Server
-    prisma/                      # Schema, migrations, and seed scripts
-    src/
-       core/                    # DB config, Middlewares, shared Utils
-       modules/                 # Domain-driven feature modules
-       server.ts                # Application entry point
-    .env.example
-    package.json
+ PBL3-UniStay-Da-Nang/
+  backend/                         # Express.js API Server
+     prisma/                      # Schema, migrations, and seed scripts
+     src/
+        core/                    # DB config, Middlewares, shared Utils
+        modules/                 # Domain-driven feature modules
+        server.ts                # Application entry point
+     .env.example
+     package.json
+     Dockerfile                   # Backend container config
 
- frontend/                        # React Client Application
-    src/
-       components/              # Reusable UI components (Shadcn, custom)
-       pages/                   # Route views
-      ├ store/                   # Zustand state slices
-       services/                # API fetching logic
-       locales/                 # i18n translation files
-    .env.example
-    package.json
+  frontend/                        # React Client Application
+     src/
+        components/              # Reusable UI components (Shadcn, custom)
+        pages/                   # Route views
+       ├ store/                   # Zustand state slices
+        services/                # API fetching logic
+        locales/                 # i18n translation files
+     .env.example
+     package.json
+     Dockerfile                   # Frontend container config
+     nginx.conf                   # Nginx SPA & Proxy routing
 
- .github/workflows/               # GitHub Actions CI/CD pipelines
- logo.png                         # Project Logo
- README.md                        # Documentation
+  .github/workflows/               # GitHub Actions CI/CD pipelines
+  docker-compose.yml               # Local Docker orchestration (All services)
+  docker-compose.prod.yml          # Production VPS orchestration (Security focused)
+  Caddyfile                        # Production HTTPS & Reverse Proxy config
+  logo.png                         # Project Logo
+  README.md                        # Documentation
 ```
 
 ---
@@ -156,17 +162,27 @@ PBL3-UniStay-Da-Nang/
 
 ### Requirements
 - **Node.js** (v18+)
-- **Docker & Docker Compose** (For running PostgreSQL & Redis locally)
+- **Docker & Docker Compose**
 
-### 1. Database & Redis Setup
-From the `backend` directory, start the required services via Docker:
+### 1. Quick Start (All-in-one Docker)
+You can run the entire stack (Frontend, Backend, Database, Redis, PgAdmin) using Docker Compose from the root directory:
 ```bash
-cd backend
-docker-compose up -d
+docker-compose up -d --build
 ```
-*(Ensure your database URL is correctly configured in `.env`)*
+- **Frontend**: `http://localhost:8080`
+- **Backend API**: `http://localhost:6969`
+- **PgAdmin**: `http://localhost:5050`
 
-### 2. Backend
+### 2. Manual Local Development
+If you prefer running Node.js and React natively for development:
+
+**Start Dependencies (DB & Redis):**
+```bash
+# Temporarily start only db and redis using docker-compose
+docker-compose up -d db redis
+```
+
+**Backend:**
 ```bash
 cd backend
 cp .env.example .env
@@ -180,7 +196,7 @@ npm run seed:local
 npm run dev
 ```
 
-### 3. Frontend
+**Frontend:**
 ```bash
 cd frontend
 cp .env.example .env
@@ -188,6 +204,14 @@ npm install
 npm run dev
 ```
 The application will be available at `http://localhost:5173`.
+
+### 3. Production Deployment (VPS)
+For deploying to a production VPS (like Oracle Cloud) with a real domain and automatic HTTPS:
+1. Update `Caddyfile` with your domain.
+2. Run the production orchestrator:
+```bash
+docker-compose -f docker-compose.prod.yml up -d --build
+```
 
 ---
 
