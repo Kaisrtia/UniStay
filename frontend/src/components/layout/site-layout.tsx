@@ -501,6 +501,7 @@ export const SiteHeader = ({ accountLabel = 'Đăng nhập' }: SiteHeaderProps) 
   const [isAccountOpen, setIsAccountOpen] = useState(false)
   const [isFavoriteOpen, setIsFavoriteOpen] = useState(false)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<HeaderUser | null>(() => parseStoredUser())
   const [hasToken, setHasToken] = useState(() => Boolean(localStorage.getItem('accessToken')))
   const [searchKeyword, setSearchKeyword] = useState('')
@@ -606,6 +607,7 @@ export const SiteHeader = ({ accountLabel = 'Đăng nhập' }: SiteHeaderProps) 
     setIsAccountOpen(false)
     setIsFavoriteOpen(false)
     setIsNotificationOpen(false)
+    setIsMobileMenuOpen(false)
   }
 
   const handleLogout = () => {
@@ -623,12 +625,13 @@ export const SiteHeader = ({ accountLabel = 'Đăng nhập' }: SiteHeaderProps) 
 
   return (
     <header className='sticky top-0 z-30 bg-gradient-to-r from-[#000814] via-[#001D3D] to-[#003566] shadow-lg shadow-[#001D3D]/20'>
-      <div className='mx-auto flex h-32 max-w-[1440px] items-center px-8'>
-        <Link to='/home' className='mr-8 flex w-96 items-center'>
-          <img src={logo} alt='UniStay' className='h-36 w-72 object-contain' />
-        </Link>
+      <div className='mx-auto flex min-h-[80px] lg:h-32 max-w-[1440px] flex-wrap items-center justify-between gap-y-4 px-4 py-3 lg:flex-nowrap lg:gap-y-0 lg:px-8 lg:py-0'>
+        <div className='order-1 flex items-center gap-2 lg:gap-8'>
+          <Link to='/home' className='flex w-32 lg:w-96 items-center'>
+            <img src={logo} alt='UniStay' className='h-20 w-40 lg:h-36 lg:w-72 object-contain' />
+          </Link>
 
-        <div className='relative mr-5'>
+        <div className='hidden lg:block relative'>
           <button
             type='button'
             onClick={() => {
@@ -637,6 +640,7 @@ export const SiteHeader = ({ accountLabel = 'Đăng nhập' }: SiteHeaderProps) 
               setIsFavoriteOpen(false)
               setIsNotificationOpen(false)
               setIsAccountOpen(false)
+              setIsMobileMenuOpen(false)
             }}
             className='grid h-11 w-11 place-items-center rounded-full bg-[#FFC300] text-[#001D3D] shadow-md transition hover:bg-[#FFD60A]'
             aria-label='Mở menu lối tắt'
@@ -711,9 +715,10 @@ export const SiteHeader = ({ accountLabel = 'Đăng nhập' }: SiteHeaderProps) 
               </div>
             </div>
           ) : null}
+          </div>
         </div>
 
-        <div className='relative flex h-12 flex-1 max-w-[560px] items-center rounded-full border border-[#FFD60A]/20 bg-white px-5 shadow-sm'>
+        <div className='order-3 flex relative h-12 w-full lg:w-auto flex-1 max-w-[560px] items-center rounded-full border border-[#FFD60A]/20 bg-white px-5 shadow-sm lg:order-2'>
           <FaHome className='mr-3 text-[#001D3D]' />
           <input
             value={searchKeyword}
@@ -747,7 +752,7 @@ export const SiteHeader = ({ accountLabel = 'Đăng nhập' }: SiteHeaderProps) 
           {isFilterOpen && <AdvancedFilterPanel onClose={() => setIsFilterOpen(false)} />}
         </div>
 
-        <div className='ml-5 flex items-center gap-4'>
+        <div className='hidden lg:flex order-4 items-center gap-2 lg:order-3 lg:gap-4'>
           {isAuthenticated && !isAdmin ? (
             <div className='relative'>
               <button
@@ -1031,6 +1036,97 @@ export const SiteHeader = ({ accountLabel = 'Đăng nhập' }: SiteHeaderProps) 
               </div>
             )}
           </div>
+        </div>
+
+        {/* Mobile Navbar Toggle */}
+        <div className='order-2 flex relative lg:hidden'>
+          <button
+            type='button'
+            onClick={() => {
+              setIsMobileMenuOpen((current) => !current)
+              setIsShortcutOpen(false)
+            }}
+            className='grid h-11 w-11 place-items-center rounded-full bg-[#FFC300] text-[#001D3D] shadow-md transition hover:bg-[#FFD60A]'
+            aria-label='Mở menu di động'
+          >
+            {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+          </button>
+
+          {isMobileMenuOpen && (
+            <div className='absolute right-0 top-14 z-50 w-72 overflow-hidden rounded-2xl border border-white/10 bg-white text-[#181A20] shadow-2xl shadow-[#000814]/25'>
+              <div className='bg-gradient-to-br from-[#001D3D] to-[#003566] px-5 py-4 text-white'>
+                {isAuthenticated ? (
+                  <div className='flex items-center gap-3'>
+                    <HeaderAvatar avatarUrl={user?.avatarUrl} initials={initials} className='grid h-10 w-10 place-items-center text-xs font-extrabold' />
+                    <span className='min-w-0'>
+                      <span className='block truncate text-sm font-extrabold'>{displayName}</span>
+                      <span className='mt-0.5 block text-[10px] font-semibold uppercase tracking-wide text-[#FFD60A]'>{primaryRole}</span>
+                    </span>
+                  </div>
+                ) : (
+                  <p className='text-sm font-extrabold'>Menu</p>
+                )}
+              </div>
+              <div className='grid p-3 max-h-[70vh] overflow-y-auto'>
+                <Link to='/home' onClick={closeHeaderMenus} className='flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold hover:bg-[#FFF7D6]'>
+                  <FaHome className='text-[#003566]' /> Trang chủ
+                </Link>
+                <Link to='/posts/search' onClick={closeHeaderMenus} className='flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold hover:bg-[#FFF7D6]'>
+                  <FaSearch className='text-[#003566]' /> Tìm bài đăng
+                </Link>
+                {isAuthenticated && !isAdmin && (
+                  <Link to='/posts/favourites' onClick={closeHeaderMenus} className='flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold hover:bg-[#FFF7D6]'>
+                    <FaHeart className='text-red-500' /> Yêu thích
+                  </Link>
+                )}
+                {isAuthenticated && (
+                  <div className='relative'>
+                    <button onClick={() => { closeHeaderMenus(); void loadNotifications(); setIsNotificationOpen(true); }} className='flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-bold hover:bg-[#FFF7D6]'>
+                      <span className='flex items-center gap-3'><FaBell className='text-[#003566]' /> Thông báo</span>
+                      {unreadNotificationCount > 0 && <span className='rounded-full bg-red-500 px-2 py-0.5 text-[10px] text-white'>{unreadNotificationCount}</span>}
+                    </button>
+                  </div>
+                )}
+                <div className='my-2 border-t border-gray-100' />
+                {!isAdmin && (
+                  <Link to={isAuthenticated ? '/posts/create' : '/login'} onClick={closeHeaderMenus} className='flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold hover:bg-[#FFF7D6]'>
+                    <FaPlusCircle className='text-[#FFC300]' /> Đăng tin mới
+                  </Link>
+                )}
+                {isAuthenticated && !isAdmin && (
+                  <Link to='/contacts' onClick={closeHeaderMenus} className='flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold hover:bg-[#FFF7D6]'>
+                    <FaUsers className='text-[#003566]' /> Yêu cầu liên hệ
+                  </Link>
+                )}
+                {isStudent && (
+                  <Link to='/demands' onClick={closeHeaderMenus} className='flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold hover:bg-[#FFF7D6]'>
+                    <FaSlidersH className='text-[#003566]' /> Nhu cầu ở ghép
+                  </Link>
+                )}
+                {isAdmin && (
+                  <Link to='/admin/overview' onClick={closeHeaderMenus} className='flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold hover:bg-[#FFF7D6]'>
+                    <FaUsers className='text-[#FFC300]' /> Trang quản trị
+                  </Link>
+                )}
+                {isAuthenticated && (
+                  <>
+                    <div className='my-2 border-t border-gray-100' />
+                    <Link to='/account/profile' onClick={closeHeaderMenus} className='flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold hover:bg-[#FFF7D6]'>
+                      <FaUserCircle className='text-[#003566]' /> Thông tin cá nhân
+                    </Link>
+                    <button onClick={handleLogout} className='flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-red-500 hover:bg-[#FFF7D6]'>
+                      <FaSignOutAlt /> Đăng xuất
+                    </button>
+                  </>
+                )}
+                {!isAuthenticated && (
+                  <Link to='/login' onClick={closeHeaderMenus} className='mt-2 flex items-center justify-center rounded-xl bg-[#001D3D] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#003566]'>
+                    {accountLabel}
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>
