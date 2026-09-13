@@ -1,0 +1,24 @@
+name: Deploy Production (Self-Hosted)
+
+on:
+  push:
+    branches: ["develop", "main"]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Deploy Full Stack
+        run: |
+          # Truy cập vào thư mục chứa code trên VPS (Dựa vào ảnh chụp màn hình terminal trước đó của bạn)
+          cd ~/self_host/UniStay
+
+          # Kéo code mới nhất từ nhánh tương ứng (develop hoặc main)
+          git pull origin ${{ github.ref_name }}
+
+          # Chạy Migrate Database (và seed data nếu có)
+          docker compose -f docker-compose.prod.yml --profile tools run --rm migrate-seed-data
+
+          # Khởi động lại toàn bộ hệ thống & Build lại Frontend/Backend nếu có thay đổi
+          docker compose -f docker-compose.prod.yml up -d --build
