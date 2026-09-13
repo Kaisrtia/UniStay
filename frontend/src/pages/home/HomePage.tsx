@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { motion, AnimatePresence } from 'framer-motion'
 import { FaBolt, FaMapMarkerAlt, FaParking, FaRegHeart, FaRoute, FaShieldAlt, FaStar, FaWifi } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 
@@ -116,50 +117,75 @@ const mapPostToListing = (post: Post, index: number): Listing => ({
   accent: ['from-[#0D63C2] to-[#003566]', 'from-[#003566] to-[#001D3D]', 'from-[#FFD60A] to-[#FFC300]'][index % 3]
 })
 
-const ListingCard = ({ listing }: { listing: Listing }) => (
-  <Link
-    to={`/posts/${listing.id}`}
-    className='block overflow-hidden rounded-2xl border border-[#E6EAF0] bg-white shadow-lg shadow-[#001D3D]/5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#001D3D]/10'
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+}
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const ListingCard = ({ listing, index = 0 }: { listing: Listing; index?: number }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay: index * 0.1 }}
   >
-    <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${listing.accent}`}>
-      {listing.image ? (
-        <img
-          src={listing.image}
-          alt={listing.title}
-          className='h-full w-full object-cover transition duration-300 hover:scale-105'
-        />
-      ) : (
-        <div className='absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(255,255,255,0.32),transparent_30%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.18),transparent_34%)]' />
-      )}
-      <span className='absolute left-4 top-4 rounded-full bg-[#FFC300] px-4 py-1.5 text-xs font-extrabold text-[#001D3D]'>
-        {listing.purpose}
-      </span>
-      <span className='absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-[#003566]'>
-        <FaRegHeart />
-      </span>
-    </div>
-    <div className='p-5'>
-      <h3 className='min-h-[56px] text-xl font-extrabold leading-7 text-[#181A20]'>{listing.title}</h3>
-      <p className='mt-3 flex items-center gap-2 text-sm font-medium text-gray-500'>
-        <FaMapMarkerAlt className='text-[#FFC300]' />
-        {listing.location}
-      </p>
-      <div className='mt-5 flex items-center justify-between'>
-        <p className='text-xl font-extrabold text-[#003566]'>{listing.price}</p>
-        <div className='flex items-center gap-1 text-sm font-bold text-[#FFC300]'>
-          <FaStar />
-          4.8
+    <Link
+      to={`/posts/${listing.id}`}
+      className='block overflow-hidden rounded-2xl border border-[#E6EAF0] bg-white shadow-lg shadow-[#001D3D]/5 transition duration-300 hover:-translate-y-1.5 hover:border-[#0D63C2]/30 hover:shadow-xl hover:shadow-[#0D63C2]/15'
+    >
+      <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${listing.accent}`}>
+        {listing.image ? (
+          <img
+            src={listing.image}
+            alt={listing.title}
+            className='h-full w-full object-cover transition duration-300 hover:scale-105'
+          />
+        ) : (
+          <div className='absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(255,255,255,0.32),transparent_30%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.18),transparent_34%)]' />
+        )}
+        <span className='absolute left-4 top-4 rounded-full bg-[#FFC300] px-4 py-1.5 text-xs font-extrabold text-[#001D3D] shadow-md'>
+          {listing.purpose}
+        </span>
+        <motion.span 
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className='absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-[#003566] shadow-sm'
+        >
+          <FaRegHeart />
+        </motion.span>
+      </div>
+      <div className='p-5'>
+        <h3 className='min-h-[56px] text-xl font-extrabold leading-7 text-[#181A20] line-clamp-2'>{listing.title}</h3>
+        <p className='mt-3 flex items-center gap-2 text-sm font-medium text-gray-500'>
+          <FaMapMarkerAlt className='text-[#FFC300]' />
+          {listing.location}
+        </p>
+        <div className='mt-5 flex items-center justify-between'>
+          <p className='text-xl font-extrabold text-[#003566]'>{listing.price}</p>
+          <div className='flex items-center gap-1 text-sm font-bold text-[#FFC300]'>
+            <FaStar />
+            4.8
+          </div>
+        </div>
+        <div className='mt-4 flex flex-wrap gap-2'>
+          {listing.meta.map((item) => (
+            <span key={item} className='rounded-full bg-[#F5F7FA] border border-gray-100 px-3 py-1 text-xs font-semibold text-gray-600'>
+              {item}
+            </span>
+          ))}
         </div>
       </div>
-      <div className='mt-4 flex flex-wrap gap-2'>
-        {listing.meta.map((item) => (
-          <span key={item} className='rounded-full bg-[#F5F7FA] px-3 py-1 text-xs font-semibold text-gray-600'>
-            {item}
-          </span>
-        ))}
-      </div>
-    </div>
-  </Link>
+    </Link>
+  </motion.div>
 )
 
 const HomePage = () => {
@@ -189,14 +215,15 @@ const HomePage = () => {
         ])
 
         if (postResult.data.length > 0) {
-          setFeaturedListings(postResult.data.slice(0, 3).map(mapPostToListing))
+          const mapped = postResult.data.slice(0, 6).map(mapPostToListing)
+          setFeaturedListings([...mapped, ...fallbackListings.slice(mapped.length, 6)])
         }
 
         if (wardResult.length > 0) {
           setSearchAreas(
             wardResult.slice(0, 4).map((ward, index) => ({
               name: ward.name,
-              count: 'Xem danh sach bai dang trong khu vuc nay',
+              count: 'Xem danh sách bài đăng trong khu vực này',
               color: areas[index % areas.length].color,
               wardId: ward.id
             }))
@@ -228,111 +255,173 @@ const HomePage = () => {
 
       <main>
         <section className='relative overflow-hidden bg-gradient-to-br from-[#000814] via-[#001D3D] to-[#0D63C2] px-8 py-16 text-white'>
-          <div className='absolute right-24 top-12 h-72 w-72 rounded-full bg-[#FFC300]/20 blur-3xl' />
-          <div className='absolute bottom-8 left-8 h-64 w-64 rounded-full bg-[#0D63C2]/30 blur-3xl' />
+          <motion.div 
+            animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            className='absolute right-24 top-12 h-72 w-72 rounded-full bg-[#FFC300]/20 blur-3xl' 
+          />
+          <motion.div 
+            animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.3, 0.2] }}
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+            className='absolute bottom-8 left-8 h-64 w-64 rounded-full bg-[#0D63C2]/30 blur-3xl' 
+          />
           <div className='relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.2fr_0.8fr]'>
-            <div>
-              <p className='text-sm font-extrabold tracking-[0.28em] text-[#FFD60A]'>UNISTAY ĐÀ NẴNG</p>
-              <h1 className='mt-6 max-w-3xl text-5xl font-extrabold leading-tight'>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+            >
+              <motion.p variants={fadeInUp} className='text-sm font-extrabold tracking-[0.28em] text-[#FFD60A]'>UNISTAY ĐÀ NẴNG</motion.p>
+              <motion.h1 variants={fadeInUp} className='mt-6 max-w-3xl text-5xl font-extrabold leading-tight'>
                 Tìm phòng trọ phù hợp cho sinh viên trong vài phút
-              </h1>
-              <p className='mt-6 max-w-2xl text-lg font-medium leading-8 text-blue-100'>
+              </motion.h1>
+              <motion.p variants={fadeInUp} className='mt-6 max-w-2xl text-lg font-medium leading-8 text-blue-100'>
                 Khám phá phòng trọ, căn hộ và bạn cùng phòng quanh các trường đại học tại Đà Nẵng với bộ lọc theo khu
                 vực, ngân sách và tiện ích.
-              </p>
-              <div className='mt-8 flex flex-wrap gap-4'>
-                <Link
-                  to='/posts/search'
-                  className='rounded-full bg-[#FFC300] px-7 py-3 font-extrabold text-[#001D3D] shadow-lg shadow-[#FFC300]/20'
-                >
-                  Tìm phòng ngay
-                </Link>
-                <Link
-                  to='/posts/nearby'
-                  className='inline-flex items-center gap-2 rounded-full border border-white/30 bg-[#0D63C2] px-7 py-3 font-extrabold text-white shadow-lg shadow-[#0D63C2]/20 transition hover:bg-[#003566]'
-                >
-                  <FaRoute />
-                  Tìm phòng gần nhất
-                </Link>
+              </motion.p>
+              <motion.div variants={fadeInUp} className='mt-8 flex flex-wrap gap-4'>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    to='/posts/search'
+                    className='block rounded-full bg-[#FFC300] px-7 py-3 font-extrabold text-[#001D3D] shadow-lg shadow-[#FFC300]/20 transition-colors hover:bg-[#ffcf33]'
+                  >
+                    Tìm phòng ngay
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    to='/posts/nearby'
+                    className='inline-flex items-center gap-2 rounded-full border border-white/30 bg-[#0D63C2] px-7 py-3 font-extrabold text-white shadow-lg shadow-[#0D63C2]/20 transition hover:bg-[#003566]'
+                  >
+                    <FaRoute />
+                    Tìm phòng gần nhất
+                  </Link>
+                </motion.div>
                 {isAdmin ? (
-                  <Link to='/admin/overview' className='rounded-full bg-white px-7 py-3 font-extrabold text-[#003566]'>
-                    Trang quản trị
-                  </Link>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link to='/admin/overview' className='block rounded-full bg-white px-7 py-3 font-extrabold text-[#003566] shadow-lg transition-colors hover:bg-gray-100'>
+                      Trang quản trị
+                    </Link>
+                  </motion.div>
                 ) : (
-                  <Link to='/posts/create' className='rounded-full bg-white px-7 py-3 font-extrabold text-[#003566]'>
-                    Đăng tin mới
-                  </Link>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link to='/posts/create' className='block rounded-full bg-white px-7 py-3 font-extrabold text-[#003566] shadow-lg transition-colors hover:bg-gray-100'>
+                      Đăng tin mới
+                    </Link>
+                  </motion.div>
                 )}
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
-            <aside className='rounded-3xl border border-white/20 bg-white/10 p-8 backdrop-blur'>
+            <motion.aside 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className='rounded-3xl border border-white/20 bg-white/10 p-8 backdrop-blur shadow-2xl'
+            >
               <h2 className='text-2xl font-extrabold'>Dữ liệu đang có</h2>
               <div className='mt-8 grid grid-cols-3 gap-5'>
                 {[
                   [overviewStats.approvedPosts, 'bài đã duyệt'],
                   [overviewStats.wards, 'phường/xã'],
                   [overviewStats.mappedPosts, 'bài có tọa độ']
-                ].map(([value, label]) => (
-                  <div key={label}>
+                ].map(([value, label], idx) => (
+                  <motion.div 
+                    key={label}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 + idx * 0.1 }}
+                  >
                     <p className='text-3xl font-extrabold text-[#FFD60A]'>{value}</p>
                     <p className='mt-2 text-sm font-medium text-blue-100'>{label}</p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
               <div className='mt-8 border-t border-white/20 pt-6 text-sm leading-6 text-blue-100'>
                 Số liệu được cập nhật từ hệ thống bài đăng, khu vực và tọa độ bản đồ.
               </div>
-            </aside>
+            </motion.aside>
           </div>
         </section>
 
         <section className='mx-auto max-w-7xl px-8 py-20'>
-          <div className='flex items-end justify-between gap-6'>
-            <div>
-              <h2 className='text-4xl font-extrabold text-[#181A20]'>Bài đăng nổi bật</h2>
-              <p className='mt-3 text-gray-500'>
-                Các phòng đã được duyệt, có hình ảnh rõ ràng và thông tin giá minh bạch.
-              </p>
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+          >
+            <div className='flex items-end justify-between gap-6'>
+              <motion.div variants={fadeInUp}>
+                <h2 className='text-4xl font-extrabold text-[#181A20]'>Bài đăng nổi bật</h2>
+                <p className='mt-3 text-gray-500'>
+                  Các phòng đã được duyệt, có hình ảnh rõ ràng và thông tin giá minh bạch.
+                </p>
+              </motion.div>
+              <motion.div variants={fadeInUp} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link to='/posts/search' className='rounded-full bg-[#001D3D] px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#003566]'>
+                  Xem tất cả
+                </Link>
+              </motion.div>
             </div>
-            <Link to='/posts/search' className='rounded-full bg-[#001D3D] px-6 py-3 text-sm font-extrabold text-white'>
-              Xem tất cả
-            </Link>
-          </div>
 
-          <div className='mt-10 grid gap-7 lg:grid-cols-3'>
-            {featuredListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
-          </div>
+            <div className='mt-10 grid gap-7 lg:grid-cols-3'>
+              <AnimatePresence>
+                {featuredListings.map((listing, index) => (
+                  <ListingCard key={listing.id} listing={listing} index={index} />
+                ))}
+              </AnimatePresence>
+            </div>
+          </motion.div>
         </section>
 
         <section className='mx-auto max-w-7xl px-8 pb-20'>
-          <div>
-            <h2 className='text-4xl font-extrabold'>Khu vực được tìm kiếm nhiều</h2>
-            <p className='mt-3 text-gray-500'>Bắt đầu từ những khu vực có nhiều lựa chọn phù hợp với sinh viên.</p>
-          </div>
-          <div className='mt-9 grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
-            {searchAreas.map((area) => (
-              <Link
-                key={area.name}
-                to={
-                  area.wardId
-                    ? `/posts/search?wardId=${area.wardId}`
-                    : `/posts/search?keyword=${encodeURIComponent(area.name)}`
-                }
-                className='rounded-2xl border border-[#E6EAF0] bg-white p-6 shadow-lg shadow-[#001D3D]/5 transition hover:-translate-y-0.5 hover:border-[#FFC300]'
-              >
-                <div className='h-1.5 w-16 rounded-full' style={{ backgroundColor: area.color }} />
-                <h3 className='mt-8 text-2xl font-extrabold'>{area.name}</h3>
-                <p className='mt-2 text-sm font-medium text-gray-500'>{area.count}</p>
-              </Link>
-            ))}
-          </div>
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+          >
+            <motion.div variants={fadeInUp}>
+              <h2 className='text-4xl font-extrabold'>Khu vực được tìm kiếm nhiều</h2>
+              <p className='mt-3 text-gray-500'>Bắt đầu từ những khu vực có nhiều lựa chọn phù hợp với sinh viên.</p>
+            </motion.div>
+            <div className='mt-9 grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
+              <AnimatePresence>
+                {searchAreas.map((area, index) => (
+                  <motion.div 
+                    key={area.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <Link
+                      to={
+                        area.wardId
+                          ? `/posts/search?wardId=${area.wardId}`
+                          : `/posts/search?keyword=${encodeURIComponent(area.name)}`
+                      }
+                      className='block rounded-2xl border border-[#E6EAF0] bg-white p-6 shadow-lg shadow-[#001D3D]/5 transition duration-300 hover:-translate-y-1.5 hover:border-[#FFC300] hover:shadow-xl hover:shadow-[#001D3D]/10'
+                    >
+                      <div className='h-1.5 w-16 rounded-full' style={{ backgroundColor: area.color }} />
+                      <h3 className='mt-8 text-2xl font-extrabold'>{area.name}</h3>
+                      <p className='mt-2 text-sm font-medium text-gray-500'>{area.count}</p>
+                    </Link>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </motion.div>
         </section>
 
         <section className='mx-auto max-w-7xl px-8 pb-24'>
-          <div className='grid overflow-hidden rounded-3xl bg-[#001D3D] text-white lg:grid-cols-[1.1fr_0.9fr]'>
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6 }}
+            className='grid overflow-hidden rounded-3xl bg-[#001D3D] text-white shadow-2xl shadow-[#001D3D]/20 lg:grid-cols-[1.1fr_0.9fr]'
+          >
             <div className='p-10'>
               <h2 className='max-w-2xl text-4xl font-extrabold leading-tight'>
                 Tạo nhu cầu thuê trọ để nhận gợi ý phù hợp hơn
@@ -341,22 +430,28 @@ const HomePage = () => {
                 Lưu ngân sách, khu vực, trường học và tiêu chí bạn cùng phòng. UniStay sẽ ưu tiên những bài đăng phù hợp
                 nhất.
               </p>
-              <Link
-                to='/posts/search'
-                className='mt-8 inline-block rounded-full bg-[#FFC300] px-7 py-3 font-extrabold text-[#001D3D]'
-              >
-                Xem gợi ý
-              </Link>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className='mt-8 inline-block'>
+                <Link
+                  to='/posts/search'
+                  className='block rounded-full bg-[#FFC300] px-7 py-3 font-extrabold text-[#001D3D] shadow-lg shadow-[#FFC300]/20 transition-colors hover:bg-[#ffcf33]'
+                >
+                  Xem gợi ý
+                </Link>
+              </motion.div>
             </div>
             <div className='grid gap-4 bg-[#003566] p-10 sm:grid-cols-2'>
               {amenities.map(({ icon: Icon, label }) => (
-                <div key={label} className='rounded-2xl bg-white/10 p-5'>
+                <motion.div 
+                  key={label} 
+                  whileHover={{ y: -5, backgroundColor: 'rgba(255,255,255,0.15)' }}
+                  className='rounded-2xl bg-white/10 p-5 transition-colors duration-300'
+                >
                   <Icon className='text-2xl text-[#FFD60A]' />
                   <p className='mt-4 font-bold'>{label}</p>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </section>
       </main>
 
