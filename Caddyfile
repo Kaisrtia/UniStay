@@ -1,3 +1,0 @@
-unistay.dpdns.org {
-  reverse_proxy frontend:80
-}

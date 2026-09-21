@@ -1,18 +1,4 @@
 services:
-  caddy:
-    image: caddy:2-alpine
-    container_name: unistay-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"     # Bắt buộc để Let's Encrypt xác thực HTTP
-      - "443:443"   # Bắt buộc cho HTTPS
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data      # Lưu trữ chứng chỉ SSL vĩnh viễn (để không bị rate limit khi restart)
-      - caddy_config:/config
-    depends_on:
-      - frontend
-
   backend:
     build:
       context: ./backend
@@ -39,6 +25,9 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
+    networks:
+      - default
+      - web_gateway
 
   db:
     image: postgres:16-alpine
@@ -96,8 +85,11 @@ services:
       timeout: 5s
       retries: 3
 
+networks:
+  default:
+  web_gateway:
+    external: true
+
 volumes:
   postgres_data:
   redis_data:
-  caddy_data:
-  caddy_config:
