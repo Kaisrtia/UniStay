@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { motion } from 'framer-motion'
 
-import { FaArrowLeft, FaBath, FaBed, FaBolt, FaMapMarkerAlt, FaRulerCombined } from 'react-icons/fa'
+import { FaArrowLeft, FaBath, FaBed, FaBolt, FaMapMarkerAlt, FaRulerCombined, FaSync } from 'react-icons/fa'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { SiteFooter, SiteHeader } from '@/components/layout/site-layout'
@@ -136,6 +136,7 @@ const SearchResultsPage = () => {
   const [matchLevel, setMatchLevel] = useState<MatchLevel>('LOW')
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
+  const [reloadKey, setReloadKey] = useState(0)
 
   const queryFilters = useMemo<PostFilters>(() => {
     const purposeParam = searchParams.get('purpose')
@@ -212,7 +213,7 @@ const SearchResultsPage = () => {
     }
 
     void loadPosts()
-  }, [activeTab, currentPage, matchLevel, queryFilters])
+  }, [activeTab, currentPage, matchLevel, queryFilters, reloadKey])
 
   const content = useMemo(() => {
     if (loading) {
@@ -220,7 +221,19 @@ const SearchResultsPage = () => {
     }
 
     if (errorMessage) {
-      return <p className='py-12 text-center text-sm font-semibold text-red-500'>{errorMessage}</p>
+      return (
+        <div className='py-12 text-center'>
+          <p className='text-sm font-semibold text-red-500'>{errorMessage}</p>
+          <button
+            type='button'
+            onClick={() => setReloadKey((prev) => prev + 1)}
+            className='mt-4 inline-flex items-center gap-2 rounded-full bg-[#001D3D] px-5 py-2.5 text-sm font-bold text-white shadow transition hover:bg-[#003566]'
+          >
+            <FaSync />
+            Thử lại
+          </button>
+        </div>
+      )
     }
 
     if (posts.length === 0) {

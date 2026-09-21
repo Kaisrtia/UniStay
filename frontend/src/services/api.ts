@@ -15,6 +15,8 @@ export const API_BASE_URL = resolveApiBaseUrl()
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & {
   _retry?: boolean
+  _retryCount?: number
+  _skipRetry?: boolean
   _skipAuthRefresh?: boolean
 }
 
@@ -24,6 +26,7 @@ type JwtPayload = {
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
   },
@@ -144,24 +147,43 @@ api.interceptors.response.use(
       )
     }
 
-    if (error.response?.status !== 401 || !originalRequest || originalRequest._retry || shouldSkipRefresh(originalRequest)) {
-      return Promise.reject(error)
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !shouldSkipRefresh(originalRequest)) {
+      originalRequest._retry = true
+
+      try {
+        refreshSessionRequest = refreshSessionRequest || refreshSession()
+        const accessToken = await refreshSessionRequest
+        originalRequest.headers = originalRequest.headers || {}
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`
+        return api(originalRequest)
+      } catch (refreshError) {
+        clearStoredAuthSession()
+        return Promise.reject(refreshError)
+      } finally {
+        refreshSessionRequest = null
+      }
     }
 
-    originalRequest._retry = true
+    // Auto-retry for idempotent requests on network errors, timeouts, and server starting errors (502, 503, 504)
+    const method = originalRequest?.method?.toLowerCase()
+    const isIdempotentMethod = method === 'get' || method === 'head'
+    const status = error.response?.status
+    const isNetworkOrServerError =
+      !error.response ||
+      error.code === 'ECONNABORTED' ||
+      (status !== undefined && [502, 503, 504].includes(status))
 
-    try {
-      refreshSessionRequest = refreshSessionRequest || refreshSession()
-      const accessToken = await refreshSessionRequest
-      originalRequest.headers = originalRequest.headers || {}
-      originalRequest.headers.Authorization = `Bearer ${accessToken}`
+    const maxRetries = 3
+    const currentRetry = originalRequest?._retryCount || 0
+
+    if (originalRequest && !originalRequest._skipRetry && isIdempotentMethod && isNetworkOrServerError && currentRetry < maxRetries) {
+      originalRequest._retryCount = currentRetry + 1
+      const backoffDelay = 1000 * Math.pow(1.5, currentRetry)
+      await new Promise((resolve) => setTimeout(resolve, backoffDelay))
       return api(originalRequest)
-    } catch (refreshError) {
-      clearStoredAuthSession()
-      return Promise.reject(refreshError)
-    } finally {
-      refreshSessionRequest = null
     }
+
+    return Promise.reject(error)
   }
 )
 

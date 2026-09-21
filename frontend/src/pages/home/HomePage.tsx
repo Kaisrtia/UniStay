@@ -1,9 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaBolt, FaMapMarkerAlt, FaParking, FaRegHeart, FaRoute, FaShieldAlt, FaStar, FaWifi } from 'react-icons/fa'
+import {
+  FaBolt,
+  FaMapMarkerAlt,
+  FaParking,
+  FaRegHeart,
+  FaRoute,
+  FaShieldAlt,
+  FaStar,
+  FaSync,
+  FaWifi
+} from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 
+import { AreaSkeleton, ListingSkeleton } from '@/components/feedback/ListingSkeleton'
 import { SiteFooter, SiteHeader } from '@/components/layout/site-layout'
 import locationService from '@/services/locationService'
 import postService, { type Post } from '@/services/postService'
@@ -25,36 +36,6 @@ type Area = {
   color: string
   wardId?: number
 }
-
-const fallbackListings: Listing[] = [
-  {
-    id: 'pst_seed_001',
-    title: 'Căn hộ mini gần Đại học Bách khoa, đầy đủ nội thất',
-    location: 'Liên Chiểu, Đà Nẵng',
-    price: '3.000.000đ/tháng',
-    meta: ['28m²', 'Máy giặt', 'Ban công'],
-    purpose: 'Cho thuê',
-    accent: 'from-[#0D63C2] to-[#003566]'
-  },
-  {
-    id: 'pst_seed_003',
-    title: 'Phòng trọ yên tĩnh cho sinh viên',
-    location: 'Hải Châu, Đà Nẵng',
-    price: '2.200.000đ/tháng',
-    meta: ['22m²', 'WiFi', 'An ninh'],
-    purpose: 'Mới đăng',
-    accent: 'from-[#003566] to-[#001D3D]'
-  },
-  {
-    id: 'pst_seed_004',
-    title: 'Tìm nữ ở ghép gần Trường Đại học Kinh tế',
-    location: 'Ngũ Hành Sơn, Đà Nẵng',
-    price: '1.500.000đ/tháng',
-    meta: ['Ở ghép', 'Tự do', 'Gần trường'],
-    purpose: 'Ở ghép',
-    accent: 'from-[#FFD60A] to-[#FFC300]'
-  }
-]
 
 const areas: Area[] = [
   { name: 'Hải Châu', count: 'Nhiều bài đăng phù hợp', color: '#0D63C2' },
@@ -189,7 +170,7 @@ const ListingCard = ({ listing, index = 0 }: { listing: Listing; index?: number 
 )
 
 const HomePage = () => {
-  const [featuredListings, setFeaturedListings] = useState<Listing[]>(fallbackListings)
+  const [featuredListings, setFeaturedListings] = useState<Listing[]>([])
   const [searchAreas, setSearchAreas] = useState<Area[]>(areas)
   const [roles, setRoles] = useState<string[]>(() => getStoredRoles())
   const [overviewStats, setOverviewStats] = useState({
@@ -197,50 +178,79 @@ const HomePage = () => {
     wards: 0,
     mappedPosts: 0
   })
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  const loadFeaturedPosts = useCallback(async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setIsRefreshing(true)
+    }
+
+    try {
+      const [postResult, wardResult] = await Promise.all([
+        postService.getPosts({
+          limit: 12,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        }),
+        locationService.getWards()
+      ])
+
+      const mapped = postResult.data.map(mapPostToListing)
+      setFeaturedListings(mapped.slice(0, 6))
+
+      if (wardResult.length > 0) {
+        setSearchAreas(
+          wardResult.slice(0, 4).map((ward, index) => ({
+            name: ward.name,
+            count: 'Xem danh sách bài đăng trong khu vực này',
+            color: areas[index % areas.length].color,
+            wardId: ward.id
+          }))
+        )
+      }
+
+      setOverviewStats({
+        approvedPosts: postResult.meta?.total || postResult.data.length,
+        wards: wardResult.length,
+        mappedPosts: postResult.data.filter((post) => Number(post.latitude) && Number(post.longitude)).length
+      })
+
+      setIsLoading(false)
+      setIsRefreshing(false)
+      return true
+    } catch {
+      setIsRefreshing(false)
+      return false
+    }
+  }, [])
+
+  // Automatically and implicitly retry in the background until initial data arrives
+  useEffect(() => {
+    let isMounted = true
+    let retryTimer: ReturnType<typeof setTimeout> | null = null
+
+    const fetchUntilSuccess = async () => {
+      const success = await loadFeaturedPosts(false)
+      if (!success && isMounted) {
+        // Silently retry in the background every 2.5s until backend responds
+        retryTimer = setTimeout(fetchUntilSuccess, 2500)
+      }
+    }
+
+    void fetchUntilSuccess()
+
+    return () => {
+      isMounted = false
+      if (retryTimer) clearTimeout(retryTimer)
+    }
+  }, [loadFeaturedPosts])
 
   useEffect(() => {
     const syncRoles = () => setRoles(getStoredRoles())
     window.addEventListener('auth-user-updated', syncRoles)
     window.addEventListener('storage', syncRoles)
 
-    const loadFeaturedPosts = async () => {
-      try {
-        const [postResult, wardResult] = await Promise.all([
-          postService.getPosts({
-            limit: 12,
-            sortBy: 'createdAt',
-            sortOrder: 'desc'
-          }),
-          locationService.getWards()
-        ])
-
-        if (postResult.data.length > 0) {
-          const mapped = postResult.data.slice(0, 6).map(mapPostToListing)
-          setFeaturedListings([...mapped, ...fallbackListings.slice(mapped.length, 6)])
-        }
-
-        if (wardResult.length > 0) {
-          setSearchAreas(
-            wardResult.slice(0, 4).map((ward, index) => ({
-              name: ward.name,
-              count: 'Xem danh sách bài đăng trong khu vực này',
-              color: areas[index % areas.length].color,
-              wardId: ward.id
-            }))
-          )
-        }
-
-        setOverviewStats({
-          approvedPosts: postResult.meta?.total || postResult.data.length,
-          wards: wardResult.length,
-          mappedPosts: postResult.data.filter((post) => Number(post.latitude) && Number(post.longitude)).length
-        })
-      } catch {
-        setFeaturedListings(fallbackListings)
-      }
-    }
-
-    void loadFeaturedPosts()
     return () => {
       window.removeEventListener('auth-user-updated', syncRoles)
       window.removeEventListener('storage', syncRoles)
@@ -332,7 +342,11 @@ const HomePage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 + idx * 0.1 }}
                   >
-                    <p className='text-3xl font-extrabold text-[#FFD60A]'>{value}</p>
+                    {isLoading ? (
+                      <div className='h-9 w-16 rounded-md bg-white/20 animate-pulse' />
+                    ) : (
+                      <p className='text-3xl font-extrabold text-[#FFD60A]'>{value}</p>
+                    )}
                     <p className='mt-2 text-sm font-medium text-blue-100'>{label}</p>
                   </motion.div>
                 ))}
@@ -358,19 +372,59 @@ const HomePage = () => {
                   Các phòng đã được duyệt, có hình ảnh rõ ràng và thông tin giá minh bạch.
                 </p>
               </motion.div>
-              <motion.div variants={fadeInUp} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link to='/posts/search' className='rounded-full bg-[#001D3D] px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#003566]'>
-                  Xem tất cả
-                </Link>
-              </motion.div>
+              <div className='flex items-center gap-3'>
+                <motion.button
+                  variants={fadeInUp}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type='button'
+                  onClick={() => void loadFeaturedPosts(true)}
+                  disabled={isLoading || isRefreshing}
+                  className='inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition hover:bg-gray-50 hover:border-gray-300 disabled:opacity-60'
+                  title='Làm mới dữ liệu'
+                >
+                  <FaSync className={isRefreshing ? 'animate-spin text-[#0D63C2]' : 'text-gray-500'} />
+                  <span className='hidden sm:inline'>{isRefreshing ? 'Đang tải...' : 'Làm mới'}</span>
+                </motion.button>
+                <motion.div variants={fadeInUp} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link to='/posts/search' className='rounded-full bg-[#001D3D] px-6 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#003566]'>
+                    Xem tất cả
+                  </Link>
+                </motion.div>
+              </div>
             </div>
 
             <div className='mt-10 grid gap-7 lg:grid-cols-3'>
-              <AnimatePresence>
-                {featuredListings.map((listing, index) => (
-                  <ListingCard key={listing.id} listing={listing} index={index} />
-                ))}
-              </AnimatePresence>
+              {isLoading ? (
+                <ListingSkeleton count={3} />
+              ) : featuredListings.length > 0 ? (
+                <AnimatePresence>
+                  {featuredListings.map((listing, index) => (
+                    <ListingCard key={listing.id} listing={listing} index={index} />
+                  ))}
+                </AnimatePresence>
+              ) : (
+                <div className='col-span-full rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center'>
+                  <p className='text-base font-bold text-gray-700'>Chưa có bài đăng nào</p>
+                  <p className='mt-2 text-sm text-gray-500'>Hiện tại chưa có bài đăng phòng trọ mới nào trong hệ thống.</p>
+                  <div className='mt-6 flex justify-center gap-4'>
+                    <button
+                      type='button'
+                      onClick={() => void loadFeaturedPosts(true)}
+                      className='inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-[#001D3D] shadow-sm hover:bg-gray-50'
+                    >
+                      <FaSync className={isRefreshing ? 'animate-spin' : ''} />
+                      Tải lại dữ liệu
+                    </button>
+                    <Link
+                      to='/posts/create'
+                      className='rounded-full bg-[#0D63C2] px-5 py-2.5 text-sm font-bold text-white shadow transition hover:bg-[#003566]'
+                    >
+                      Đăng bài đầu tiên
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         </section>
