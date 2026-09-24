@@ -14,7 +14,7 @@ import {
 } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 
-import { AreaSkeleton, ListingSkeleton } from '@/components/feedback/ListingSkeleton'
+import { ListingSkeleton } from '@/components/feedback/ListingSkeleton'
 import { SiteFooter, SiteHeader } from '@/components/layout/site-layout'
 import locationService from '@/services/locationService'
 import postService, { type Post } from '@/services/postService'

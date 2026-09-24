@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { motion } from 'framer-motion'
-
 import { FaArrowLeft, FaBath, FaBed, FaBolt, FaMapMarkerAlt, FaRulerCombined, FaSync } from 'react-icons/fa'
 import { Link, useSearchParams } from 'react-router-dom'
 
