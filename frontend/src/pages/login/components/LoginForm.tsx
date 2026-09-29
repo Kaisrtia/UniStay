@@ -21,6 +21,7 @@ const LoginForm = () => {
   const navigate = useNavigate()
   const { loading, login, loginWithGoogle, getLastError } = useAuth()
   const [errorMessage, setErrorMessage] = useState('')
+  const [unverifiedEmail, setUnverifiedEmail] = useState('')
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -30,10 +31,12 @@ const LoginForm = () => {
     }
 
     setErrorMessage('')
+    setUnverifiedEmail('')
 
     const formData = new FormData(event.currentTarget)
+    const email = String(formData.get('email') || '').trim().toLowerCase()
     const response = await login({
-      email: String(formData.get('email') || '').trim().toLowerCase(),
+      email,
       password: String(formData.get('password') || '')
     })
 
@@ -42,7 +45,11 @@ const LoginForm = () => {
       return
     }
 
-    setErrorMessage(getLastError() || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.')
+    const error = getLastError() || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'
+    setErrorMessage(error)
+    if (error.toLowerCase().includes('xác thực') || error.toLowerCase().includes('verified')) {
+      setUnverifiedEmail(email)
+    }
   }
 
   const handleGoogleCredential = async (idToken: string) => {
@@ -83,7 +90,17 @@ const LoginForm = () => {
         />
       </div>
       {errorMessage ? (
-        <p className='rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold leading-5 text-red-600'>{errorMessage}</p>
+        <div className='rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold leading-5 text-red-600'>
+          <p>{errorMessage}</p>
+          {unverifiedEmail ? (
+            <Link
+              to={`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
+              className='mt-1 inline-block text-xs font-bold text-[#0D63C2] hover:underline'
+            >
+              Nhấn vào đây để nhập mã xác thực email →
+            </Link>
+          ) : null}
+        </div>
       ) : null}
       <div className='mb-2 flex items-center justify-between text-xs'>
         <label className='flex cursor-pointer items-center gap-1'>

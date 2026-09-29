@@ -6,7 +6,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import GoogleCredentialButton from '@/components/auth/GoogleCredentialButton'
 import useAuth, { getUserFromAuthResponse } from '@/hooks/useAuth'
 import authService from '@/services/authService'
-import { translateAuthMessage } from '@/utils/authMessages'
 
 const shouldCompleteProfile = (response: unknown) => {
   const user = getUserFromAuthResponse(response as Parameters<typeof getUserFromAuthResponse>[0])
@@ -53,17 +52,15 @@ export const RegisterForm = () => {
     })
 
     if (response) {
-      const message = translateAuthMessage(response.message) || 'Đăng ký thành công.'
-
       try {
         await authService.sendEmailVerification({ email })
       } catch {
-        alert('Đăng ký thành công nhưng chưa gửi được email xác thực. Vui lòng thử gửi lại mã xác thực sau.')
-        return
+        // Even if sending code temporarily fails, navigate to verify-email where they can resend
       }
 
-      alert(`${message}\nVui lòng kiểm tra email để xác thực tài khoản.`)
-      navigate('/login')
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`, {
+        state: { email }
+      })
       return
     }
 
